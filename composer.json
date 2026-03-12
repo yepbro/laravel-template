@@ -12,13 +12,15 @@
         "php": "8.5.*",
         "laravel/framework": "^12.0",
         "laravel/horizon": "^5.45",
-        "laravel/tinker": "^2.10.1"
+        "laravel/tinker": "^2.10.1",
+        "tpetry/laravel-postgresql-enhanced": "^3.5"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.0",
         "laravel/boost": "^2.0",
         "laravel/pail": "^1.2.2",
-        "laravel/pint": "^1.24",
+        "laravel/pint": "^1.28",
         "laravel/sail": "^1.41",
         "laravel/telescope": "^5.18",
         "mockery/mockery": "^1.6",
@@ -38,6 +40,28 @@
         }
     },
     "scripts": {
+        "back": [
+            "@pint",
+            "@phpstan"
+        ],
+        "front": [
+            "@prettier",
+            "@eslint"
+        ],
+        "max": [
+            "@min",
+            "@tests"
+        ],
+        "min": [
+            "@back",
+            "@front"
+        ],
+        "pint": "./vendor/bin/pint -v",
+        "pint-show": "./vendor/bin/pint --test",
+        "phpstan": "./vendor/bin/phpstan analyse",
+        "tests": "@php artisan test -p",
+        "prettier": "npm run format",
+        "eslint": "npm run lint",
         "setup": [
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",

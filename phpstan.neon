@@ -1,0 +1,31 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+    - vendor/tpetry/laravel-postgresql-enhanced/phpstan-extension.neon
+
+parameters:
+    checkModelMethodVisibility: true
+    checkMissingTranslations: false
+    checkAuthCallsWhenInRequestScope: true
+    checkConfigTypes: true
+    checkModelAppends: true
+    noEnvCallsOutsideOfConfig: true
+    checkUnusedViews: false
+    checkOctaneCompatibility: true
+    checkModelProperties: true
+    treatPhpDocTypesAsCertain: false
+    paths:
+        - app/
+        - config/
+        - database/
+        - operations/
+        - routes/
+        - bootstrap/app.php
+        - bootstrap/providers.php
+    level: 10
+#   excludePaths:
+#       - database/migrations/2025_02_19_135025_create_permission_tables.php
+
+#    ignoreErrors:
+#        - '#PHPDoc tag @var#'
+#
