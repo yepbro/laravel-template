@@ -1,2 +1,6 @@
-resources/js/components/ui/*
-resources/views/mail/*
+.git
+node_modules
+vendor
+bootstrap/cache
+public/build
+storage

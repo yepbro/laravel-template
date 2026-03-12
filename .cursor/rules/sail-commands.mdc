@@ -1,0 +1,19 @@
+---
+description: Use Laravel Sail for PHP, Composer, and npm commands
+alwaysApply: true
+---
+
+# Sail Commands
+
+- Run PHP commands through Sail inside the Docker container.
+- Run Composer commands through Sail inside the Docker container.
+- Run npm commands through Sail inside the Docker container.
+
+Examples:
+
+- `./vendor/bin/sail php artisan test`
+- `./vendor/bin/sail composer install`
+- `./vendor/bin/sail npm run build`
+
+Do not run bare `php`, `composer`, or `npm` commands for project tasks when the
+equivalent Sail command should be used.
