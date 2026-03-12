@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Models\User;
@@ -30,7 +32,7 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     {
         Gate::define('viewHorizon', function (?User $user = null) {
             return in_array($user?->email, [
-                'denis@yepbro.pro'
+                'denis@yepbro.pro',
             ]);
         });
     }
