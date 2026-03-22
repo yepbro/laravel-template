@@ -23,6 +23,10 @@ parameters:
         - bootstrap/app.php
         - bootstrap/providers.php
     level: 10
+    parallel:
+        jobSize: 20
+        maximumNumberOfProcesses: 4
+        minimumNumberOfJobsPerProcess: 2
 #   excludePaths:
 #       - database/migrations/2025_02_19_135025_create_permission_tables.php
 
