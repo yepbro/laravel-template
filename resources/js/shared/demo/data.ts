@@ -28,7 +28,7 @@ export const starterLeads: DemoLead[] = [
         name: 'Jonas Reed',
         email: 'jonas@lattice.io',
         company: 'Lattice',
-        mode: 'Blade + Vue islands',
+        mode: 'Vue-only SPA',
         status: 'Trial',
     },
     {

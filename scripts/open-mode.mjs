@@ -1,24 +1,12 @@
 import { spawnSync } from 'node:child_process';
 
-const mode = process.argv[2];
+const spaUrl = 'http://localhost/spa';
+const mode = process.argv[2] ?? 'spa';
 
-const modeConfig = {
-    spa: {
-        label: 'Vue-only SPA',
-        url: 'http://localhost/spa',
-    },
-    islands: {
-        label: 'Blade + Vue islands',
-        url: 'http://localhost/islands',
-    },
-};
-
-if (!mode || !(mode in modeConfig)) {
-    console.error('Usage: node scripts/open-mode.mjs <spa|islands>');
+if (mode !== 'spa') {
+    console.error('Usage: node scripts/open-mode.mjs [spa]');
     process.exit(1);
 }
-
-const { label, url } = modeConfig[mode];
 
 function getOpenCommand(targetUrl) {
     switch (process.platform) {
@@ -31,9 +19,9 @@ function getOpenCommand(targetUrl) {
     }
 }
 
-const [command, args] = getOpenCommand(url);
+const [command, args] = getOpenCommand(spaUrl);
 
-console.log(`${label}: ${url}`);
+console.log(`Vue-only SPA: ${spaUrl}`);
 
 const result = spawnSync(command, args, {
     stdio: 'ignore',

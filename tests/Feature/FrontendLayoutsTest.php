@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\IslandsController;
 use App\Http\Controllers\SpaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -51,28 +50,6 @@ class FrontendLayoutsTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('id="app"', false);
-        $response->assertSee('href="/spa"', false);
-        $response->assertSee('href="/islands"', false);
-    }
-
-    public function test_islands_route_uses_single_action_controller(): void
-    {
-        $route = Route::getRoutes()->match(Request::create('/islands', 'GET'));
-
-        $this->assertSame(IslandsController::class, $route->getActionName());
-    }
-
-    public function test_islands_page_uses_blade_layout_with_vue_mount_points(): void
-    {
-        $response = $this->get('/islands');
-
-        $response->assertOk();
-        $response->assertSee('Blade + Vue islands');
-        $response->assertSee('id="toast-root"', false);
-        $response->assertSee('href="/spa"', false);
-        $response->assertSee('href="/islands"', false);
-        $response->assertSee('data-island="form-demo"', false);
-        $response->assertSee('data-island="table-demo"', false);
-        $response->assertSee('data-island="toast-demo"', false);
+        $response->assertDontSee('href="/islands"', false);
     }
 }

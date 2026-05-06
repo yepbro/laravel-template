@@ -313,30 +313,9 @@ Useful command:
 
 - `./vendor/bin/sail npm run devtools`
 
-## What To Remove If You Do Not Use Blade + Vue Islands
-
-Delete:
-
-- `app/Http/Controllers/IslandsController.php`
-- `resources/views/islands.blade.php`
-- `resources/js/islands/app.ts`
-
-Update:
-
-- `routes/web.php` - remove the `/islands` route
-- `vite.config.js` - remove `resources/js/islands/app.ts` from `input`
-- `README.md` and docs if you want a single-mode template
-
-Keep:
-
-- `resources/views/layouts/frontend.blade.php`
-- `resources/js/shared/*`
-
-because the SPA still uses them.
-
 ## What Not To Delete By Mistake
 
-Even if you keep only the SPA mode, these are still required:
+These are required for the SPA:
 
 - `resources/views/layouts/frontend.blade.php`
 - `resources/css/app.css`

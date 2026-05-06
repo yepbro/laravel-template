@@ -85,12 +85,7 @@
             "@php -r \"echo PHP_EOL.'Vue-only SPA: http://localhost/spa'.PHP_EOL.PHP_EOL;\"",
             "@dev"
         ],
-        "dev:islands": [
-            "@php -r \"echo PHP_EOL.'Blade + Vue islands: http://localhost/islands'.PHP_EOL.PHP_EOL;\"",
-            "@dev"
-        ],
         "open:spa": "npm run open:spa",
-        "open:islands": "npm run open:islands",
         "front:test:unit": "npm run test:unit",
         "front:test:e2e": "npm run test:e2e",
         "front:msw:init": "npm run msw:init",

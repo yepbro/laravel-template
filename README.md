@@ -8,35 +8,26 @@ without Inertia.
 This project is a reusable Laravel starter for teams that want:
 
 - a modern frontend stack without Inertia
-- both `Vue-only SPA` and `Blade + Vue islands` available in one template
+- a `Vue-only SPA` served from `/spa`
 - shared UI primitives, forms, toasts, and state management ready from the start
 - a codebase that can be trimmed down quickly after cloning
 
 Use it as a base for new products, internal tools, admin panels, or
-server-rendered Laravel apps that still need focused Vue interactivity.
+server-rendered Laravel apps that pair with a focused Vue SPA where needed.
 
 ## Frontend Documentation
 
-- `docs/frontend-vue.md` - guide for the `Vue-only SPA` mode
-- `docs/frontent-blade.md` - guide for the `Blade + Vue islands` mode
+- `docs/frontend-vue.md` - guide for the `Vue-only SPA`
 
-## Frontend Modes
-
-This template ships with two parallel frontend modes:
+## Frontend
 
 ### `Vue-only SPA`
 
 - Route: `/spa`
 - Stack: `Vue 3 + TypeScript + Vue Router + Pinia + Tailwind CSS v4`
-- Best when the frontend owns navigation and page composition.
+- The frontend owns navigation and page composition.
 
-### `Blade + Vue islands`
-
-- Route: `/islands`
-- Stack: `Blade + focused Vue widgets + TypeScript + Pinia + Vue Router`
-- Best when Laravel keeps page rendering and Vue enhances selected sections.
-
-Both modes share:
+The stack includes:
 
 - `Vite`
 - `Tailwind CSS v4`
@@ -69,7 +60,7 @@ project grows:
 
 ## Starter Examples
 
-Each mode includes working examples for:
+The SPA includes working examples for:
 
 - validated form
 - data table
@@ -82,11 +73,9 @@ they are easy to replace with application code once a project is cloned.
 
 - `resources/js/app.ts` - SPA entry
 - `resources/js/spa/router.ts` - SPA routes
-- `resources/js/islands/app.ts` - Blade islands entry
 - `resources/js/shared/components/examples/*` - shared demo components
 - `resources/js/shared/stores/demo.ts` - shared Pinia demo store
 - `resources/views/spa.blade.php` - SPA shell
-- `resources/views/islands.blade.php` - Blade islands page
 - `resources/views/layouts/frontend.blade.php` - shared frontend Blade layout
 
 ## Local Setup
@@ -104,20 +93,17 @@ Run the dev environment:
 ./vendor/bin/sail composer dev
 ```
 
-Target a specific frontend mode:
+Target the SPA (prints the URL, then runs the same dev stack):
 
 ```bash
 ./vendor/bin/sail composer dev:spa
-./vendor/bin/sail composer dev:islands
 ./vendor/bin/sail composer open:spa
-./vendor/bin/sail composer open:islands
 ```
 
 Direct npm aliases are also available:
 
 ```bash
 ./vendor/bin/sail npm run open:spa
-./vendor/bin/sail npm run open:islands
 ```
 
 Useful frontend checks:
@@ -150,9 +136,6 @@ Additional npm scripts:
 
 ## Customizing After Clone
 
-- Keep only `/spa` if the project is a client-driven Vue app.
-- Keep only `/islands` if the project is mostly Blade with progressive
-  enhancement.
 - Replace the shared demo store and example components with real domain logic.
 - Remove unused UI primitives from `resources/js/components/ui` as the project
   narrows its scope.

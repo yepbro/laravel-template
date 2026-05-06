@@ -5,7 +5,6 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "dev:islands": "vite",
         "dev:spa": "vite",
         "devtools": "vue-devtools",
         "format": "prettier --write resources/ tests/ package.json vite.config.js vitest.config.ts playwright.config.ts eslint.config.js tsconfig.json tailwind.config.js components.json .prettierrc README.md docs/",
@@ -13,7 +12,6 @@
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "msw:init": "msw init public --save",
-        "open:islands": "node scripts/open-mode.mjs islands",
         "open:spa": "node scripts/open-mode.mjs spa",
         "test:e2e": "playwright test",
         "test:e2e:headed": "playwright test --headed",
