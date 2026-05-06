@@ -2,12 +2,14 @@
     "agents": [
         "cursor"
     ],
+    "cloud": false,
     "guidelines": true,
     "herd_mcp": false,
     "mcp": true,
     "nightwatch_mcp": false,
     "sail": true,
     "skills": [
+        "laravel-best-practices",
         "configuring-horizon",
         "tailwindcss-development"
     ]
