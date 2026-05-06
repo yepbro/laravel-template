@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IslandsController;
 use App\Http\Controllers\SpaController;
 use Illuminate\Http\Request;
@@ -19,11 +20,22 @@ class FrontendLayoutsTest extends TestCase
         $this->withoutVite();
     }
 
-    public function test_root_redirects_to_spa_showcase(): void
+    public function test_root_route_uses_single_action_controller(): void
+    {
+        $route = Route::getRoutes()->match(Request::create('/', 'GET'));
+
+        $this->assertSame(HomeController::class, $route->getActionName());
+    }
+
+    public function test_root_page_renders_centered_home_stub_without_showcase_links(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect('/spa');
+        $response->assertOk();
+        $response->assertSee('Laravel Frontend Playground');
+        $response->assertSee('A compact starter for trying different frontend approaches in Laravel.');
+        $response->assertDontSee('href="/spa"', false);
+        $response->assertDontSee('href="/islands"', false);
     }
 
     public function test_spa_route_uses_single_action_controller(): void
