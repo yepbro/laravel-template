@@ -1,7 +1,3 @@
-import { setupWorker } from 'msw/browser';
-
-import { handlers } from '@/shared/mocks/handlers';
-
 let workerPromise: Promise<void> | undefined;
 
 export function startMocking(): Promise<void> {
@@ -10,11 +6,14 @@ export function startMocking(): Promise<void> {
     }
 
     if (!workerPromise) {
-        const worker = setupWorker(...handlers);
+        workerPromise = import('msw/browser')
+            .then(async ({ setupWorker }) => {
+                const { handlers } = await import('@/shared/mocks/handlers');
+                const worker = setupWorker(...handlers);
 
-        workerPromise = worker
-            .start({
-                onUnhandledRequest: 'bypass',
+                return worker.start({
+                    onUnhandledRequest: 'bypass',
+                });
             })
             .then(() => undefined);
     }
