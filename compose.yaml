@@ -178,6 +178,10 @@ services:
 networks:
     sail:
         driver: bridge
+        ipam:
+            driver: default
+            config:
+                -   subnet: '172.28.11.0/24'
 volumes:
     sail-pgsql:
         driver: local
