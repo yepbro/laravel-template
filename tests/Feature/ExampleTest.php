@@ -9,10 +9,13 @@ use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    public function test_the_root_route_redirects_to_the_spa_showcase(): void
+    public function test_the_root_route_displays_the_home_page(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect('/spa');
+        $response
+            ->assertOk()
+            ->assertViewIs('home')
+            ->assertViewHas('title', 'Laravel Frontend Playground');
     }
 }

@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Fortify;
+namespace App\Auth\Support;
 
-use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
+/**
+ * Project-owned password validation rules.
+ *
+ * Applies Password::default() plus the 'confirmed' requirement.
+ */
 trait PasswordValidationRules
 {
     /**
-     * Get the validation rules used to validate passwords.
-     *
-     * @return array<int, Rule|array<mixed>|string>
+     * @return list<mixed>
      */
     protected function passwordRules(): array
     {

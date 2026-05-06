@@ -27,6 +27,18 @@ const navigation = [
         label: t('app.navigation.toast'),
         to: '/spa/toast',
     },
+    {
+        label: 'Login',
+        to: '/spa/auth/login',
+    },
+    {
+        label: 'Register',
+        to: '/spa/auth/register',
+    },
+    {
+        label: 'Security',
+        to: '/spa/auth/security',
+    },
 ];
 
 const currentPath = computed(() => route.path);
