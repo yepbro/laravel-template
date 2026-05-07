@@ -1,0 +1,206 @@
+name: CI
+
+on:
+    push:
+    pull_request:
+
+concurrency:
+    group: ci-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+env:
+    DB_CONNECTION: pgsql
+    DB_HOST: 127.0.0.1
+    DB_PORT: 5432
+    DB_DATABASE: testing
+    DB_USERNAME: postgres
+    DB_PASSWORD: postgres
+
+jobs:
+    backend-checks:
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:18-alpine
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DB: testing
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U postgres -d testing"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.5'
+                  extensions: pgsql, pcov
+                  coverage: pcov
+                  tools: composer:v2
+
+            - name: Cache Composer
+              uses: actions/cache@v4
+              with:
+                  path: ~/.composer/cache/files
+                  key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-composer-
+
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - name: Environment
+              run: |
+                  cp .env.example .env
+                  php artisan key:generate --no-interaction
+
+            - name: Migrate
+              run: php artisan migrate --force --no-interaction
+
+            - name: Backend formatting & static analysis (read-only)
+              run: composer run-script back:check
+
+            - name: PHPUnit with coverage threshold & Clover artifact
+              run: composer run-script tests:coverage
+
+            - uses: actions/upload-artifact@v4
+              if: success() || failure()
+              with:
+                  name: php-coverage-clover
+                  path: build/coverage/php/clover.xml
+                  if-no-files-found: ignore
+
+    frontend-checks:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+                  cache: npm
+
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - run: npm ci
+
+            - name: Lint, types, build, Vitest coverage
+              run: composer run-script front:check
+
+            - uses: actions/upload-artifact@v4
+              if: success() || failure()
+              with:
+                  name: frontend-coverage
+                  path: |
+                      build/coverage/frontend/lcov.info
+                      build/coverage/frontend/coverage-summary.json
+                  if-no-files-found: ignore
+
+    e2e:
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:18-alpine
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DB: testing
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U postgres -d testing"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.5'
+                  extensions: pgsql
+                  tools: composer:v2
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+                  cache: npm
+
+            - name: Cache Composer
+              uses: actions/cache@v4
+              with:
+                  path: ~/.composer/cache/files
+                  key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-composer-
+
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - run: npm ci
+
+            - name: Environment
+              run: |
+                  cp .env.example .env
+                  php artisan key:generate --no-interaction
+
+            - name: Migrate
+              run: php artisan migrate --force --no-interaction
+
+            - name: Build frontend assets
+              run: npm run build
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps
+
+            - name: Start application server
+              run: |
+                  php artisan serve --host=127.0.0.1 --port=8000 &
+                  for i in $(seq 1 60); do
+                    if curl -fsS "http://127.0.0.1:8000/spa" >/dev/null 2>&1; then
+                      exit 0
+                    fi
+                    sleep 1
+                  done
+                  echo "Laravel server did not become ready in time"
+                  exit 1
+
+            - name: Run Playwright
+              run: npm run test:e2e
+              env:
+                  PLAYWRIGHT_BASE_URL: http://127.0.0.1:8000
+
+    security-audit:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.5'
+                  tools: composer:v2
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+                  cache: npm
+
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - run: npm ci
+
+            - name: Composer and npm audit (high & critical only)
+              run: composer run-script security:audit

@@ -16,6 +16,8 @@ export default defineConfigWithVueTs(
             'bootstrap/cache',
             'bootstrap/ssr',
             'storage',
+            'build',
+            'coverage',
         ],
     },
     vue.configs['flat/recommended'],

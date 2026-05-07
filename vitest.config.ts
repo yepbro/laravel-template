@@ -14,5 +14,19 @@ export default defineConfig({
         environment: 'jsdom',
         setupFiles: ['./tests/frontend/setup.ts'],
         include: ['tests/frontend/**/*.test.ts'],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'json-summary', 'lcov'],
+            reportsDirectory: './build/coverage/frontend',
+            /**
+             * Baseline from first `vitest run --coverage`; thresholds sit ~2pp below to allow small drift without hiding major regressions.
+             */
+            thresholds: {
+                lines: 33,
+                branches: 25,
+                functions: 30,
+                statements: 33,
+            },
+        },
     },
 });

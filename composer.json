@@ -51,10 +51,24 @@
             "@pint",
             "@phpstan"
         ],
+        "back:check": [
+            "@pint-show",
+            "@phpstan"
+        ],
         "front": [
             "@prettier",
-            "@eslint"
+            "@eslint",
+            "@front:check"
         ],
+        "front:check": "npm run ci:frontend",
+        "ci:check": [
+            "@back:check",
+            "@tests:coverage",
+            "@front:check"
+        ],
+        "quality:check": "@ci:check",
+        "tests:check": "@php artisan test -p --compact",
+        "tests:coverage": "@php artisan test -p --compact --coverage --min=42 -- --coverage-clover=build/coverage/php/clover.xml",
         "max": [
             "@min",
             "@tests"
@@ -111,6 +125,10 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ],
+        "security:audit": [
+            "composer audit --locked --ignore-severity=low --ignore-severity=medium",
+            "npm run audit:high"
         ]
     },
     "extra": {
