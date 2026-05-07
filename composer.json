@@ -68,7 +68,7 @@
         ],
         "quality:check": "@ci:check",
         "tests:check": "@php artisan test -p --compact",
-        "tests:coverage": "@php artisan test -p --compact --coverage --min=42 -- --coverage-clover=build/coverage/php/clover.xml",
+        "tests:coverage": "@php artisan test -p --compact --coverage --min=42 --coverage-clover=build/coverage/php/clover.xml",
         "max": [
             "@min",
             "@tests"
