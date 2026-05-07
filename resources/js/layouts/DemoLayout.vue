@@ -87,6 +87,6 @@ useHead({
             </nav>
         </header>
 
-        <RouterView />
+        <slot />
     </div>
 </template>

@@ -13,6 +13,8 @@ Route::get('/', HomeController::class);
 Route::get('/spa/{path?}', SpaController::class)->where('path', '.*');
 
 Route::middleware(['web', 'auth:' . AuthFeatures::make()->guard()])->group(function (): void {
+    Route::get('/account/{path?}', SpaController::class)->where('path', '.*');
+
     Route::get('/user/security-status', SecurityStatusController::class)
         ->name('auth.security-status');
 });

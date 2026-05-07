@@ -14,6 +14,11 @@ use Tests\TestCase;
  * These tests pin route names, URIs, HTTP methods, middleware, and controller
  * ownership. All routes must resolve to App\Http\Controllers\Auth controllers,
  * not Laravel\Fortify or any other third-party package controllers.
+ *
+ * GET /login, /register, /forgot-password, and /reset-password/{token} are
+ * guest redirects to the canonical Vue routes under /spa/auth/* (Batch A).
+ * Named routes such as `login` and `password.reset` remain on the legacy paths
+ * for URL generation and non-GET actions; Batch B may align public URLs.
  */
 class FortifyParityRouteTest extends TestCase
 {
@@ -67,18 +72,18 @@ class FortifyParityRouteTest extends TestCase
     {
         return [
             // -- Authentication -----------------------------------------------
-            'login GET view'        => ['login',       'login',    ['GET'],    ['web', 'guest:web']],
+            'login GET redirect'    => ['login',       'login',    ['GET'],    ['web', 'guest:web']],
             'login POST store'      => ['login.store', 'login',    ['POST'],   ['web', 'guest:web', 'throttle:login']],
             'logout POST'           => ['logout',      'logout',   ['POST'],   ['web', 'auth:web']],
 
             // -- Registration -------------------------------------------------
-            'register GET view'     => ['register',       'register', ['GET'],  ['web', 'guest:web']],
+            'register GET redirect' => ['register',       'register', ['GET'],  ['web', 'guest:web']],
             'register POST store'   => ['register.store', 'register', ['POST'], ['web', 'guest:web']],
 
             // -- Password Reset -----------------------------------------------
-            'password.request GET'  => ['password.request', 'forgot-password',        ['GET'],  ['web', 'guest:web']],
+            'password.request GET redirect' => ['password.request', 'forgot-password',        ['GET'],  ['web', 'guest:web']],
             'password.email POST'   => ['password.email',   'forgot-password',        ['POST'], ['web', 'guest:web']],
-            'password.reset GET'    => ['password.reset',   'reset-password/{token}', ['GET'],  ['web', 'guest:web']],
+            'password.reset GET redirect' => ['password.reset',   'reset-password/{token}', ['GET'],  ['web', 'guest:web']],
             'password.update POST'  => ['password.update',  'reset-password',         ['POST'], ['web', 'guest:web']],
 
             // -- Password Confirmation ----------------------------------------
@@ -117,6 +122,70 @@ class FortifyParityRouteTest extends TestCase
             'passkeys.register.store POST'  => ['passkeys.register.store',   'user/passkeys',             ['POST'],   ['web', 'auth:web', 'password.confirm']],
             'passkeys.destroy DELETE'       => ['passkeys.destroy',          'user/passkeys/{passkey}',   ['DELETE'], ['web', 'auth:web', 'password.confirm']],
         ];
+    }
+
+    public function test_login_get_redirects_guest_to_spa_auth_login(): void
+    {
+        $this->get('/login')->assertRedirect('/spa/auth/login');
+    }
+
+    public function test_register_get_redirects_guest_to_spa_auth_register(): void
+    {
+        $this->get('/register')->assertRedirect('/spa/auth/register');
+    }
+
+    public function test_forgot_password_get_redirects_guest_to_spa_auth_forgot_password(): void
+    {
+        $this->get('/forgot-password')->assertRedirect('/spa/auth/forgot-password');
+    }
+
+    public function test_reset_password_get_redirects_guest_preserving_token_and_query(): void
+    {
+        $this->get('/reset-password/sample-token')
+            ->assertRedirect('/spa/auth/reset-password/sample-token');
+
+        $this->get('/reset-password/simple-token?email=test@example.com')
+            ->assertRedirect(
+                '/spa/auth/reset-password/simple-token?email=test%40example.com',
+            );
+    }
+
+    /**
+     * @param non-empty-string $spaPath
+     */
+    #[DataProvider('spaAuthHostViewPathsProvider')]
+    public function test_spa_auth_path_returns_spa_host_shell(string $spaPath): void
+    {
+        $this->get($spaPath)
+            ->assertOk()
+            ->assertSee('id="app"', false);
+    }
+
+    /**
+     * @return array<string, array{non-empty-string}>
+     */
+    public static function spaAuthHostViewPathsProvider(): array
+    {
+        return [
+            'login'            => ['/spa/auth/login'],
+            'register'         => ['/spa/auth/register'],
+            'forgot-password'  => ['/spa/auth/forgot-password'],
+            'reset-password'   => ['/spa/auth/reset-password/abc'],
+        ];
+    }
+
+    public function test_named_login_and_register_urls_remain_on_legacy_paths(): void
+    {
+        $this->assertSame(url('/login'), route('login'));
+        $this->assertSame(url('/register'), route('register'));
+        $this->assertSame(
+            url('/forgot-password'),
+            route('password.request'),
+        );
+        $this->assertSame(
+            url('/reset-password/tok'),
+            route('password.reset', ['token' => 'tok']),
+        );
     }
 
     /**

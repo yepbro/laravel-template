@@ -58,7 +58,7 @@ SPA entry and structure:
 
 - `resources/js/app.ts` - SPA bootstrap, installs plugins, mounts toaster, mounts Vue
 - `resources/js/App.vue` - current SPA root, renders the main layout
-- `resources/js/layouts/SpaLayout.vue` - app shell and navigation
+- `resources/js/layouts/DemoLayout.vue` - demo app shell and navigation
 - `resources/js/spa/router.ts` - route table for SPA pages
 - `resources/js/spa/pages/*` - page components
 
@@ -104,7 +104,7 @@ This means:
 
 1. Create a new page component in `resources/js/spa/pages/`.
 2. Add a new route object in `resources/js/spa/router.ts`.
-3. If the page should appear in the top navigation, update the `navigation` array in `resources/js/layouts/SpaLayout.vue`.
+3. If the page should appear in the top navigation, update the `navigation` array in `resources/js/layouts/DemoLayout.vue`.
 4. If the page needs shared app state, create or extend a store in `resources/js/shared/stores/` or `resources/js/spa/stores/`.
 
 Recommended pattern:
@@ -173,7 +173,7 @@ Use `@unhead/vue` for title/meta tags.
 Current setup:
 
 - `resources/js/shared/head.ts`
-- `resources/js/layouts/SpaLayout.vue` already uses `useHead(...)`
+- `resources/js/layouts/DemoLayout.vue` already uses `useHead(...)`
 
 Use it in pages when:
 

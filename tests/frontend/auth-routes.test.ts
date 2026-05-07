@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
-import SpaLayout from '@/layouts/SpaLayout.vue';
+import DemoLayout from '@/layouts/DemoLayout.vue';
 import { createSharedI18n } from '@/shared/i18n';
 import { router } from '@/spa/router';
 
@@ -94,11 +94,48 @@ describe('spa router auth route resolution', () => {
     });
 });
 
+describe('spa router account routes', () => {
+    const paths = router.getRoutes().map((r) => r.path);
+
+    it('registers /account/profile', () => {
+        expect(paths).toContain('/account/profile');
+    });
+
+    it('registers /account/password', () => {
+        expect(paths).toContain('/account/password');
+    });
+
+    it('registers /account/login-credentials', () => {
+        expect(paths).toContain('/account/login-credentials');
+    });
+
+    it('registers /account/delete', () => {
+        expect(paths).toContain('/account/delete');
+    });
+
+    it('resolves /account/profile with account layout meta', async () => {
+        await router.push('/account/profile');
+        expect(router.currentRoute.value.name).toBe('account.profile');
+        expect(router.currentRoute.value.meta.layout).toBe('account');
+        expect(router.currentRoute.value.meta.requiresAuth).toBe(true);
+    });
+
+    it('uses guest layout for auth login', async () => {
+        await router.push('/spa/auth/login');
+        expect(router.currentRoute.value.meta.layout).toBe('guest');
+    });
+
+    it('uses demo layout for spa overview', async () => {
+        await router.push('/spa');
+        expect(router.currentRoute.value.meta.layout).toBe('demo');
+    });
+});
+
 // ------------------------------------------------------------------
-// SpaLayout: navigation links
+// DemoLayout: navigation links
 // ------------------------------------------------------------------
 
-function mountSpaLayout() {
+function mountDemoLayout() {
     const testRouter = createRouter({
         history: createMemoryHistory(),
         routes: [
@@ -106,16 +143,16 @@ function mountSpaLayout() {
         ],
     });
 
-    return shallowMount(SpaLayout, {
+    return shallowMount(DemoLayout, {
         global: {
             plugins: [testRouter, createSharedI18n()],
         },
     });
 }
 
-describe('SpaLayout navigation', () => {
+describe('DemoLayout navigation', () => {
     it('renders a Login link pointing to /spa/auth/login', () => {
-        const wrapper = mountSpaLayout();
+        const wrapper = mountDemoLayout();
         const linkTos = wrapper
             .findAll('router-link-stub')
             .map((el) => el.attributes('to'));
@@ -123,7 +160,7 @@ describe('SpaLayout navigation', () => {
     });
 
     it('renders a Register link pointing to /spa/auth/register', () => {
-        const wrapper = mountSpaLayout();
+        const wrapper = mountDemoLayout();
         const linkTos = wrapper
             .findAll('router-link-stub')
             .map((el) => el.attributes('to'));
@@ -131,7 +168,7 @@ describe('SpaLayout navigation', () => {
     });
 
     it('retains all original demo navigation links', () => {
-        const wrapper = mountSpaLayout();
+        const wrapper = mountDemoLayout();
         const linkTos = wrapper
             .findAll('router-link-stub')
             .map((el) => el.attributes('to'));
@@ -142,7 +179,7 @@ describe('SpaLayout navigation', () => {
     });
 
     it('renders a Security link pointing to /spa/auth/security', () => {
-        const wrapper = mountSpaLayout();
+        const wrapper = mountDemoLayout();
         const linkTos = wrapper
             .findAll('router-link-stub')
             .map((el) => el.attributes('to'));
