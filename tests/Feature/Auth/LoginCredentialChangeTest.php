@@ -80,13 +80,14 @@ class LoginCredentialChangeTest extends TestCase
         Notification::assertSentOnDemandTimes(LoginCredentialChangeConfirm::class, 1);
     }
 
-    public function test_confirm_updates_email_and_clears_verified_at(): void
+    public function test_confirm_updates_email_and_marks_verified_when_verification_disabled(): void
     {
+        config(['auth_features.features.email_verification' => false]);
         Notification::fake();
 
         $user = User::factory()->emailOnly()->create([
             'email'             => 'old@example.com',
-            'email_verified_at' => now(),
+            'email_verified_at' => null,
         ]);
 
         $plain = 'known-plain-token-abc-12345678901234567890123456789012';
@@ -109,9 +110,10 @@ class LoginCredentialChangeTest extends TestCase
 
         $user->refresh();
         $this->assertSame('confirmed@example.com', $user->email);
-        $this->assertNull($user->email_verified_at);
+        $this->assertNotNull($user->email_verified_at);
 
         Notification::assertSentTo($user, LoginCredentialChanged::class);
+        Notification::assertNotSentTo($user, VerifyEmail::class);
     }
 
     public function test_confirm_dispatches_verify_email_when_feature_enabled(): void
@@ -142,7 +144,10 @@ class LoginCredentialChangeTest extends TestCase
 
         $this->getJson($url)->assertOk();
 
-        Notification::assertSentTo($user->fresh(), VerifyEmail::class);
+        $user->refresh();
+        $this->assertSame('verified-flow@example.com', $user->email);
+        $this->assertNull($user->email_verified_at);
+        Notification::assertSentTo($user, VerifyEmail::class);
     }
 
     public function test_confirm_fails_when_token_expired(): void

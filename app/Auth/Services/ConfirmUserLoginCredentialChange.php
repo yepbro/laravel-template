@@ -13,8 +13,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Applies a confirmed login identifier change and clears verification timestamps
- * to match {@see UpdateUserProfileInformation} semantics.
+ * Applies a confirmed login identifier change.
+ *
+ * Email: when email verification is disabled the signed confirmation URL is
+ * treated as proof of ownership and `email_verified_at` is set immediately.
+ * When verification is enabled the field is cleared and a standard VerifyEmail
+ * notification is dispatched so the user completes the verification flow.
+ *
+ * Phone: `phone_verified_at` is always cleared (phone OTP re-verification is
+ * handled separately via the phone verification flow).
  */
 final class ConfirmUserLoginCredentialChange
 {
@@ -56,12 +63,14 @@ final class ConfirmUserLoginCredentialChange
             }
 
             if ($row->type === LoginCredentialChangeType::Email) {
+                $verificationEnabled = AuthFeatures::make()->emailVerificationEnabled();
+
                 $user->forceFill([
                     'email'             => $row->new_value,
-                    'email_verified_at' => null,
+                    'email_verified_at' => $verificationEnabled ? null : now(),
                 ])->save();
 
-                if (AuthFeatures::make()->emailVerificationEnabled() && $user->hasEmail()) {
+                if ($verificationEnabled && $user->hasEmail()) {
                     $user->sendEmailVerificationNotification();
                 }
             } elseif ($row->type === LoginCredentialChangeType::Phone) {
