@@ -68,7 +68,7 @@ return [
     | The path users are redirected to after a successful login or password reset.
     |
     */
-    'home' => '/home',
+    'home' => '/account',
 
     /*
     |--------------------------------------------------------------------------

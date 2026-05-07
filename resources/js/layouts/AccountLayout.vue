@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue';
 import { LogOut } from 'lucide-vue-next';
+import { onMounted, ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
-import { logout } from '@/auth/api/client';
+import { fetchCurrentUser, logout } from '@/auth/api/client';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +22,42 @@ useHead({
     title: () => 'Account',
 });
 
+const displayName = ref('Account');
+const avatarInitials = ref('AC');
+
+function initialsFromName(label: string): string {
+    const parts = label.trim().split(/\s+/).filter(Boolean);
+
+    if (parts.length >= 2) {
+        const first = parts[0]!.charAt(0);
+        const last = parts[parts.length - 1]!.charAt(0);
+
+        return (first + last).toUpperCase();
+    }
+
+    if (parts.length === 1 && parts[0]!.length >= 2) {
+        return parts[0]!.slice(0, 2).toUpperCase();
+    }
+
+    return 'AC';
+}
+
+onMounted(async () => {
+    try {
+        const user = await fetchCurrentUser();
+        const label =
+            user.name !== ''
+                ? user.name
+                : (user.email.split('@')[0] ?? 'Account');
+
+        displayName.value = label;
+        avatarInitials.value = initialsFromName(label);
+    } catch {
+        displayName.value = 'Account';
+        avatarInitials.value = 'AC';
+    }
+});
+
 async function handleLogout(): Promise<void> {
     await logout();
     await router.push('/login');
@@ -34,14 +71,14 @@ async function handleLogout(): Promise<void> {
         >
             <RouterLink
                 class="text-sm font-semibold tracking-tight text-foreground hover:underline"
-                to="/spa"
+                to="/account"
             >
                 {{ $t('app.heading') }}
             </RouterLink>
 
             <div class="flex items-center gap-3">
                 <span class="hidden text-sm text-muted-foreground sm:inline">
-                    Account
+                    {{ displayName }}
                 </span>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
@@ -51,7 +88,7 @@ async function handleLogout(): Promise<void> {
                         >
                             <Avatar class="size-9">
                                 <AvatarFallback class="text-xs font-medium">
-                                    AC
+                                    {{ avatarInitials }}
                                 </AvatarFallback>
                             </Avatar>
                         </Button>
@@ -62,6 +99,10 @@ async function handleLogout(): Promise<void> {
                         :side-offset="8"
                     >
                         <DropdownMenuLabel>Account menu</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem @click="router.push('/account')">
+                            Dashboard
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             @click="router.push('/account/profile')"

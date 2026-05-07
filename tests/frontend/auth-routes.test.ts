@@ -2,6 +2,22 @@ import { shallowMount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+vi.mock('@/auth/api/client', async (importActual) => {
+    const actual = await importActual<typeof import('@/auth/api/client')>();
+
+    return {
+        ...actual,
+        fetchCurrentUser: vi.fn().mockResolvedValue({
+            id: 1,
+            name: 'Vitest User',
+            email: 'vitest@example.com',
+            phone: null,
+            email_verified_at: null,
+            phone_verified_at: null,
+        }),
+    };
+});
+
 import DemoLayout from '@/layouts/DemoLayout.vue';
 import { createSharedI18n } from '@/shared/i18n';
 import { router } from '@/spa/router';
@@ -143,6 +159,10 @@ describe('spa router auth route resolution', () => {
 describe('spa router account routes', () => {
     const paths = router.getRoutes().map((r) => r.path);
 
+    it('registers /account dashboard', () => {
+        expect(paths).toContain('/account');
+    });
+
     it('registers /account/profile', () => {
         expect(paths).toContain('/account/profile');
     });
@@ -157,6 +177,13 @@ describe('spa router account routes', () => {
 
     it('registers /account/delete', () => {
         expect(paths).toContain('/account/delete');
+    });
+
+    it('resolves /account with account dashboard meta', async () => {
+        await router.push('/account');
+        expect(router.currentRoute.value.name).toBe('account.dashboard');
+        expect(router.currentRoute.value.meta.layout).toBe('account');
+        expect(router.currentRoute.value.meta.requiresAuth).toBe(true);
     });
 
     it('resolves /account/profile with account layout meta', async () => {

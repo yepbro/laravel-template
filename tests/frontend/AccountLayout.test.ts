@@ -11,9 +11,22 @@ vi.mock('@unhead/vue', () => ({
     useHead: vi.fn(),
 }));
 
-vi.mock('@/auth/api/client', () => ({
-    logout: (): Promise<void> => logoutMock(),
-}));
+vi.mock('@/auth/api/client', async (importActual) => {
+    const actual = await importActual<typeof import('@/auth/api/client')>();
+
+    return {
+        ...actual,
+        logout: (): Promise<void> => logoutMock(),
+        fetchCurrentUser: vi.fn().mockResolvedValue({
+            id: 1,
+            name: 'Test User',
+            email: 'test@example.com',
+            phone: null,
+            email_verified_at: null,
+            phone_verified_at: null,
+        }),
+    };
+});
 
 describe('AccountLayout', () => {
     it('logs out and navigates to the SPA login route', async () => {

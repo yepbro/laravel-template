@@ -14,6 +14,7 @@ import type {
 } from '@/auth/schemas';
 
 export const ENDPOINTS = {
+    currentUser: '/user',
     login: '/login',
     logout: '/logout',
     register: '/register',
@@ -79,6 +80,15 @@ export interface SecurityStatusResponse {
     two_factor_confirmed: boolean;
 }
 
+export interface CurrentUserResponse {
+    id: number;
+    name: string;
+    email: string;
+    phone: string | null;
+    email_verified_at: string | null;
+    phone_verified_at: string | null;
+}
+
 export interface RegisteredPasskey {
     id: string;
     name: string;
@@ -132,6 +142,33 @@ const client = axios.create({
     withXSRFToken: true,
 });
 
+let cachedCurrentUser: CurrentUserResponse | null = null;
+
+export function clearCurrentUserCache(): void {
+    cachedCurrentUser = null;
+}
+
+export async function fetchCurrentUser(
+    force = false,
+): Promise<CurrentUserResponse> {
+    if (!force && cachedCurrentUser !== null) {
+        return cachedCurrentUser;
+    }
+
+    const response = await client.get<CurrentUserResponse>(
+        ENDPOINTS.currentUser,
+    );
+    const data = response.data;
+
+    if (data === undefined) {
+        throw new Error('Unexpected empty current user.');
+    }
+
+    cachedCurrentUser = data;
+
+    return data;
+}
+
 export async function login(
     data: LoginData,
 ): Promise<{ two_factor?: boolean }> {
@@ -144,6 +181,7 @@ export async function login(
 
 export async function logout(): Promise<void> {
     await client.post(ENDPOINTS.logout);
+    clearCurrentUserCache();
 }
 
 export async function register(data: RegisterData): Promise<void> {

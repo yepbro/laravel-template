@@ -4,6 +4,8 @@ import AccountDeletePage from '@/account/pages/AccountDeletePage.vue';
 import AccountLoginCredentialsPage from '@/account/pages/AccountLoginCredentialsPage.vue';
 import AccountPasswordPage from '@/account/pages/AccountPasswordPage.vue';
 import AccountProfilePage from '@/account/pages/AccountProfilePage.vue';
+import DashboardPage from '@/account/pages/DashboardPage.vue';
+import { clearCurrentUserCache, fetchCurrentUser } from '@/auth/api/client';
 import ConfirmPasswordPage from '@/auth/pages/ConfirmPasswordPage.vue';
 import ForgotPasswordPage from '@/auth/pages/ForgotPasswordPage.vue';
 import LoginPage from '@/auth/pages/LoginPage.vue';
@@ -151,7 +153,9 @@ const routes: RouteRecordRaw[] = [
     },
     {
         path: '/account',
-        redirect: { name: 'account.profile' },
+        name: 'account.dashboard',
+        component: DashboardPage,
+        meta: { layout: 'account', requiresAuth: true },
     },
     {
         path: '/account/profile',
@@ -180,3 +184,22 @@ const routes: RouteRecordRaw[] = [
 ];
 
 export const router = createSpaRouter(routes);
+
+router.beforeEach(async (to) => {
+    if (to.meta.requiresAuth !== true) {
+        return true;
+    }
+
+    try {
+        await fetchCurrentUser();
+
+        return true;
+    } catch {
+        clearCurrentUserCache();
+
+        return {
+            path: '/login',
+            query: { redirect: to.fullPath },
+        };
+    }
+});

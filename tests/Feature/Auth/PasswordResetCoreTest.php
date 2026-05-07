@@ -351,8 +351,8 @@ class PasswordResetCoreTest extends TestCase
             'password_confirmation' => 'NewPassword1!',
         ]);
 
-        // Must not throw; falls back to AuthFeatures::home() which defaults to '/home'.
-        $response->assertRedirect('/home');
+        // Must not throw; falls back to AuthFeatures::home().
+        $response->assertRedirect(config('auth_features.home', '/account'));
         $response->assertSessionHas('status');
     }
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\ConfirmedPasswordStatusController;
 use App\Http\Controllers\Auth\ConfirmedTwoFactorAuthenticationController;
+use App\Http\Controllers\Auth\CurrentUserController;
 use App\Http\Controllers\Auth\EmailVerificationNoticeController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -164,12 +165,17 @@ class AuthRouteRegistrar
     /**
      * Register profile and password update routes.
      *
+     *   current-user.show              GET user                   web, auth:web (JSON — SPA shell)
      *   user-password.update            PUT user/password            web, auth:web
      *   user-profile-information.update PUT user/profile-information web, auth:web
      */
     public static function profileAndPassword(): void
     {
         $guard = config('auth_features.guard', 'web');
+
+        Route::get('user', CurrentUserController::class)
+            ->middleware(['web', "auth:{$guard}"])
+            ->name('current-user');
 
         Route::put('user/password', [PasswordController::class, 'update'])
             ->middleware(['web', "auth:{$guard}"])
