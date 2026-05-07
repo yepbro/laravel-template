@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import LandingLayout from '@/layouts/LandingLayout.vue';
 import { createSharedI18n } from '@/shared/i18n';
 import HomePage from '@/spa/pages/HomePage.vue';
 
@@ -60,7 +61,10 @@ describe('HomePage', () => {
         const router = createHomeRouter();
         await router.push('/');
 
-        const wrapper = mount(HomePage, {
+        const wrapper = mount(LandingLayout, {
+            slots: {
+                default: HomePage,
+            },
             global: {
                 plugins: [router, createSharedI18n()],
             },
@@ -75,7 +79,7 @@ describe('HomePage', () => {
             wrapper.find('[data-testid="home-register-link"]').exists(),
         ).toBe(true);
         expect(
-            wrapper.find('[data-testid="home-logout-button"]').exists(),
+            wrapper.find('[data-testid="header-logout-button"]').exists(),
         ).toBe(false);
     });
 
@@ -94,7 +98,10 @@ describe('HomePage', () => {
         const router = createHomeRouter();
         await router.push('/');
 
-        const wrapper = mount(HomePage, {
+        const wrapper = mount(LandingLayout, {
+            slots: {
+                default: HomePage,
+            },
             global: {
                 plugins: [router, createSharedI18n()],
             },
@@ -103,11 +110,12 @@ describe('HomePage', () => {
         await flushPromises();
 
         expect(
-            wrapper.find('[data-testid="home-logout-button"]').exists(),
+            wrapper.find('[data-testid="header-logout-button"]').exists(),
         ).toBe(true);
         expect(wrapper.find('[data-testid="home-login-link"]').exists()).toBe(
             false,
         );
+        expect(wrapper.text()).toContain('Test User');
     });
 
     it('logs out and shows guest links', async () => {
@@ -126,7 +134,10 @@ describe('HomePage', () => {
         const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
         await router.push('/');
 
-        const wrapper = mount(HomePage, {
+        const wrapper = mount(LandingLayout, {
+            slots: {
+                default: HomePage,
+            },
             global: {
                 plugins: [router, createSharedI18n()],
             },
@@ -135,7 +146,7 @@ describe('HomePage', () => {
         await flushPromises();
 
         await wrapper
-            .find('[data-testid="home-logout-button"]')
+            .find('[data-testid="header-logout-button"]')
             .trigger('click');
         await flushPromises();
 

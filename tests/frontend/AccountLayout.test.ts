@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
@@ -39,7 +39,7 @@ describe('AccountLayout', () => {
 
         const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
 
-        const wrapper = shallowMount(AccountLayout, {
+        const wrapper = mount(AccountLayout, {
             global: {
                 plugins: [router, createSharedI18n()],
                 stubs: {
@@ -66,7 +66,8 @@ describe('AccountLayout', () => {
                             '<button type="button" v-bind="$attrs"><slot /></button>',
                     },
                     Button: {
-                        template: '<button type="button"><slot /></button>',
+                        template:
+                            '<button type="button" v-bind="$attrs"><slot /></button>',
                     },
                     Avatar: {
                         template: '<div><slot /></div>',
@@ -81,11 +82,13 @@ describe('AccountLayout', () => {
             },
         });
 
-        const logoutItem = wrapper.find('[data-testid="account-logout"]');
+        const logoutButton = wrapper.find(
+            '[data-testid="header-logout-button"]',
+        );
 
-        expect(logoutItem.exists()).toBe(true);
+        expect(logoutButton.exists()).toBe(true);
 
-        await logoutItem.trigger('click');
+        await logoutButton.trigger('click');
 
         expect(logoutMock).toHaveBeenCalledTimes(1);
         expect(pushSpy).toHaveBeenCalledWith('/login');
