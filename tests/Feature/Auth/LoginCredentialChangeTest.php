@@ -77,6 +77,7 @@ class LoginCredentialChangeTest extends TestCase
 
         Notification::assertSentTo($user, LoginCredentialChangeRequested::class);
         Notification::assertSentOnDemand(LoginCredentialChangeConfirm::class);
+        Notification::assertSentOnDemandTimes(LoginCredentialChangeConfirm::class, 1);
     }
 
     public function test_confirm_updates_email_and_clears_verified_at(): void

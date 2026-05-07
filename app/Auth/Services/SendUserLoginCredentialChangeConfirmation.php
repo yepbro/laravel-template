@@ -30,14 +30,6 @@ final class SendUserLoginCredentialChangeConfirmation
 
         Notification::route('mail', $normalizedNewEmail)
             ->notify(new LoginCredentialChangeConfirm($confirmUrl));
-
-        $old = strtolower(trim((string) $user->email));
-        $new = strtolower($normalizedNewEmail);
-
-        if ($old !== '' && $old !== $new) {
-            Notification::route('mail', $normalizedNewEmail)
-                ->notify(new LoginCredentialChangeRequested(LoginCredentialChangeType::Email, $normalizedNewEmail));
-        }
     }
 
     /**

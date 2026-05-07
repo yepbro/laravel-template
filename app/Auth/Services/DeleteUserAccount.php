@@ -13,9 +13,9 @@ class DeleteUserAccount
     public function handle(User $user): void
     {
         DB::transaction(function () use ($user): void {
-            AccountDeleted::dispatch($user);
-
             $user->delete();
+
+            AccountDeleted::dispatch($user);
         });
     }
 }
