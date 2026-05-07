@@ -8,8 +8,10 @@ use App\Auth\AuthFeatures;
 use App\Auth\TwoFactor\RecoveryCodeManager;
 use App\Auth\TwoFactor\TwoFactorManager;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\SpaController;
 use App\Http\Requests\Auth\TwoFactorChallengeRequest;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +27,7 @@ use Illuminate\Validation\ValidationException;
  *   _two_factor_login_id       - primary key of the user being challenged
  *   _two_factor_login_remember - whether to set a remember cookie
  *
- * create() - GET: shows challenge form (web) or 200 (JSON) when session has
+ * create() - GET: serves the Vue SPA shell (web) or 200 (JSON) when session has
  *            challenge state; redirects to login / returns 422 otherwise.
  * store()  - POST: verifies TOTP code or recovery code, completes login.
  */
@@ -36,7 +38,7 @@ class TwoFactorChallengeController extends Controller
         private readonly RecoveryCodeManager $recoveryCodes,
     ) {}
 
-    public function create(Request $request): Response|JsonResponse|RedirectResponse
+    public function create(Request $request): Response|JsonResponse|RedirectResponse|View
     {
         if (! $this->hasChallengeSession($request)) {
             if ($request->expectsJson()) {
@@ -52,7 +54,7 @@ class TwoFactorChallengeController extends Controller
             return response()->json([], 200);
         }
 
-        return response()->view('auth.two-factor-challenge');
+        return app(SpaController::class)();
     }
 
     public function store(TwoFactorChallengeRequest $request): JsonResponse|RedirectResponse|Response

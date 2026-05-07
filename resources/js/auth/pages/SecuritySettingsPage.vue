@@ -306,7 +306,7 @@ async function handleRegenerateCodes(): Promise<void> {
 }
 
 async function handleNavigateToConfirmPassword(): Promise<void> {
-    await router.push('/spa/auth/confirm-password');
+    await router.push('/user/confirm-password');
 }
 
 // ----------------------------------------------------------------
@@ -409,7 +409,7 @@ async function handlePasskeyDelete(id: string): Promise<void> {
                     </span>
                     <RouterLink
                         class="font-medium underline underline-offset-4"
-                        to="/spa/auth/confirm-password"
+                        to="/user/confirm-password"
                     >
                         Confirm your password
                     </RouterLink>

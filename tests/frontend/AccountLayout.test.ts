@@ -75,6 +75,6 @@ describe('AccountLayout', () => {
         await logoutItem.trigger('click');
 
         expect(logoutMock).toHaveBeenCalledTimes(1);
-        expect(pushSpy).toHaveBeenCalledWith('/spa/auth/login');
+        expect(pushSpy).toHaveBeenCalledWith('/login');
     });
 });

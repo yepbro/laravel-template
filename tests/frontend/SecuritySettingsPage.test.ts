@@ -100,9 +100,9 @@ describe('SecuritySettingsPage loading state', () => {
 
         const wrapper = mountPage();
 
-        expect(
-            wrapper.find('a[href="/spa/auth/confirm-password"]').exists(),
-        ).toBe(false);
+        expect(wrapper.find('a[href="/user/confirm-password"]').exists()).toBe(
+            false,
+        );
     });
 });
 
@@ -119,9 +119,9 @@ describe('SecuritySettingsPage unconfirmed password', () => {
         const wrapper = mountPage();
         await flushPromises();
 
-        expect(
-            wrapper.find('a[href="/spa/auth/confirm-password"]').exists(),
-        ).toBe(true);
+        expect(wrapper.find('a[href="/user/confirm-password"]').exists()).toBe(
+            true,
+        );
     });
 
     it('does not show the Enable 2FA button when password is not confirmed', async () => {
@@ -238,8 +238,8 @@ describe('SecuritySettingsPage 423 handling', () => {
         await disableBtn!.trigger('click');
         await flushPromises();
 
-        expect(
-            wrapper.find('a[href="/spa/auth/confirm-password"]').exists(),
-        ).toBe(true);
+        expect(wrapper.find('a[href="/user/confirm-password"]').exists()).toBe(
+            true,
+        );
     });
 });

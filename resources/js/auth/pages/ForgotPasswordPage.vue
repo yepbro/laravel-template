@@ -91,7 +91,7 @@ const onSubmit = form.handleSubmit(async (values) => {
             <p class="text-center text-sm text-muted-foreground">
                 <RouterLink
                     class="font-medium text-foreground underline-offset-4 hover:underline"
-                    to="/spa/auth/login"
+                    to="/login"
                 >
                     Back to sign in
                 </RouterLink>

@@ -15,10 +15,10 @@ use Tests\TestCase;
  * ownership. All routes must resolve to App\Http\Controllers\Auth controllers,
  * not Laravel\Fortify or any other third-party package controllers.
  *
- * GET /login, /register, /forgot-password, and /reset-password/{token} are
- * guest redirects to the canonical Vue routes under /spa/auth/* (Batch A).
- * Named routes such as `login` and `password.reset` remain on the legacy paths
- * for URL generation and non-GET actions; Batch B may align public URLs.
+ * GET /login, /register, /forgot-password, /reset-password/{token}, and other
+ * public auth pages serve the same Vue SPA shell (SpaController) on canonical
+ * URLs; named routes such as `login` and `password.reset` stay stable for URL
+ * generation and non-GET actions.
  */
 class FortifyParityRouteTest extends TestCase
 {
@@ -72,18 +72,18 @@ class FortifyParityRouteTest extends TestCase
     {
         return [
             // -- Authentication -----------------------------------------------
-            'login GET redirect'    => ['login',       'login',    ['GET'],    ['web', 'guest:web']],
+            'login GET SPA shell'   => ['login',       'login',    ['GET'],    ['web', 'guest:web']],
             'login POST store'      => ['login.store', 'login',    ['POST'],   ['web', 'guest:web', 'throttle:login']],
             'logout POST'           => ['logout',      'logout',   ['POST'],   ['web', 'auth:web']],
 
             // -- Registration -------------------------------------------------
-            'register GET redirect' => ['register',       'register', ['GET'],  ['web', 'guest:web']],
+            'register GET SPA shell' => ['register',       'register', ['GET'],  ['web', 'guest:web']],
             'register POST store'   => ['register.store', 'register', ['POST'], ['web', 'guest:web']],
 
             // -- Password Reset -----------------------------------------------
-            'password.request GET redirect' => ['password.request', 'forgot-password',        ['GET'],  ['web', 'guest:web']],
+            'password.request GET SPA shell' => ['password.request', 'forgot-password',        ['GET'],  ['web', 'guest:web']],
             'password.email POST'   => ['password.email',   'forgot-password',        ['POST'], ['web', 'guest:web']],
-            'password.reset GET redirect' => ['password.reset',   'reset-password/{token}', ['GET'],  ['web', 'guest:web']],
+            'password.reset GET SPA shell' => ['password.reset',   'reset-password/{token}', ['GET'],  ['web', 'guest:web']],
             'password.update POST'  => ['password.update',  'reset-password',         ['POST'], ['web', 'guest:web']],
 
             // -- Password Confirmation ----------------------------------------
@@ -124,39 +124,24 @@ class FortifyParityRouteTest extends TestCase
         ];
     }
 
-    public function test_login_get_redirects_guest_to_spa_auth_login(): void
-    {
-        $this->get('/login')->assertRedirect('/spa/auth/login');
-    }
-
-    public function test_register_get_redirects_guest_to_spa_auth_register(): void
-    {
-        $this->get('/register')->assertRedirect('/spa/auth/register');
-    }
-
-    public function test_forgot_password_get_redirects_guest_to_spa_auth_forgot_password(): void
-    {
-        $this->get('/forgot-password')->assertRedirect('/spa/auth/forgot-password');
-    }
-
-    public function test_reset_password_get_redirects_guest_preserving_token_and_query(): void
+    public function test_reset_password_get_serves_spa_shell_preserving_token_and_query(): void
     {
         $this->get('/reset-password/sample-token')
-            ->assertRedirect('/spa/auth/reset-password/sample-token');
+            ->assertOk()
+            ->assertSee('id="app"', false);
 
         $this->get('/reset-password/simple-token?email=test@example.com')
-            ->assertRedirect(
-                '/spa/auth/reset-password/simple-token?email=test%40example.com',
-            );
+            ->assertOk()
+            ->assertSee('id="app"', false);
     }
 
     /**
-     * @param non-empty-string $spaPath
+     * @param non-empty-string $path
      */
     #[DataProvider('spaAuthHostViewPathsProvider')]
-    public function test_spa_auth_path_returns_spa_host_shell(string $spaPath): void
+    public function test_public_auth_path_returns_spa_host_shell(string $path): void
     {
-        $this->get($spaPath)
+        $this->get($path)
             ->assertOk()
             ->assertSee('id="app"', false);
     }
@@ -167,14 +152,18 @@ class FortifyParityRouteTest extends TestCase
     public static function spaAuthHostViewPathsProvider(): array
     {
         return [
-            'login'            => ['/spa/auth/login'],
-            'register'         => ['/spa/auth/register'],
-            'forgot-password'  => ['/spa/auth/forgot-password'],
-            'reset-password'   => ['/spa/auth/reset-password/abc'],
+            'canonical login'           => ['/login'],
+            'canonical register'        => ['/register'],
+            'canonical forgot-password' => ['/forgot-password'],
+            'canonical reset-password'  => ['/reset-password/abc'],
+            'legacy spa login'          => ['/spa/auth/login'],
+            'legacy spa register'       => ['/spa/auth/register'],
+            'legacy spa forgot'         => ['/spa/auth/forgot-password'],
+            'legacy spa reset'          => ['/spa/auth/reset-password/abc'],
         ];
     }
 
-    public function test_named_login_and_register_urls_remain_on_legacy_paths(): void
+    public function test_named_auth_urls_use_canonical_paths(): void
     {
         $this->assertSame(url('/login'), route('login'));
         $this->assertSame(url('/register'), route('register'));
@@ -186,6 +175,11 @@ class FortifyParityRouteTest extends TestCase
             url('/reset-password/tok'),
             route('password.reset', ['token' => 'tok']),
         );
+    }
+
+    public function test_two_factor_challenge_get_without_session_redirects_to_login(): void
+    {
+        $this->get('/two-factor-challenge')->assertRedirect(route('login'));
     }
 
     /**

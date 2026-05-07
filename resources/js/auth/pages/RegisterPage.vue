@@ -157,7 +157,7 @@ const onSubmit = form.handleSubmit(async (values) => {
                 Already have an account?
                 <RouterLink
                     class="font-medium text-foreground underline-offset-4 hover:underline"
-                    to="/spa/auth/login"
+                    to="/login"
                 >
                     Sign in
                 </RouterLink>

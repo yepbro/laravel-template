@@ -45,7 +45,7 @@ const onSubmit = form.handleSubmit(async (values) => {
 
     try {
         await resetPassword(values);
-        await router.push('/spa/auth/login');
+        await router.push('/login');
     } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 422) {
             form.setErrors(normalizeErrors(error.response.data.errors ?? {}));
@@ -121,7 +121,7 @@ const onSubmit = form.handleSubmit(async (values) => {
             <p class="text-center text-sm text-muted-foreground">
                 <RouterLink
                     class="font-medium text-foreground underline-offset-4 hover:underline"
-                    to="/spa/auth/login"
+                    to="/login"
                 >
                     Back to sign in
                 </RouterLink>

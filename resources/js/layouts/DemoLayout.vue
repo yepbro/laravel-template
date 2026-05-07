@@ -29,11 +29,11 @@ const navigation = [
     },
     {
         label: 'Login',
-        to: '/spa/auth/login',
+        to: '/login',
     },
     {
         label: 'Register',
-        to: '/spa/auth/register',
+        to: '/register',
     },
     {
         label: 'Security',

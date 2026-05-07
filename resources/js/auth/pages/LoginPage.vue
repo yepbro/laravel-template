@@ -60,7 +60,7 @@ const onSubmit = form.handleSubmit(async (values) => {
     try {
         const data = await login(values);
         if (data.two_factor) {
-            await router.push('/spa/auth/two-factor-challenge');
+            await router.push('/two-factor-challenge');
         } else {
             await router.push('/spa');
         }
@@ -109,7 +109,7 @@ const onSubmit = form.handleSubmit(async (values) => {
                         <FormLabel>Password</FormLabel>
                         <RouterLink
                             class="text-xs text-muted-foreground underline-offset-4 hover:underline"
-                            to="/spa/auth/forgot-password"
+                            to="/forgot-password"
                         >
                             Forgot password?
                         </RouterLink>
@@ -177,7 +177,7 @@ const onSubmit = form.handleSubmit(async (values) => {
                 Don't have an account?
                 <RouterLink
                     class="font-medium text-foreground underline-offset-4 hover:underline"
-                    to="/spa/auth/register"
+                    to="/register"
                 >
                     Create one
                 </RouterLink>

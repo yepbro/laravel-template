@@ -486,8 +486,8 @@ describe('SecuritySettingsPage passkey section', () => {
         const wrapper = mountSecurityPage();
         await flushPromises();
 
-        expect(
-            wrapper.find('a[href="/spa/auth/confirm-password"]').exists(),
-        ).toBe(true);
+        expect(wrapper.find('a[href="/user/confirm-password"]').exists()).toBe(
+            true,
+        );
     });
 });

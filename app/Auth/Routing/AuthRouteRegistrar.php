@@ -26,7 +26,7 @@ use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\TwoFactorQrCodeController;
 use App\Http\Controllers\Auth\TwoFactorSecretKeyController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\SpaController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -45,13 +45,13 @@ class AuthRouteRegistrar
      *   login.store  POST login  web, guest:web, throttle:login
      *   logout       POST logout web, auth:web
      *
-     * GET login redirects to the Vue SPA login page.
+     * GET login serves the Vue SPA shell (canonical URL).
      */
     public static function authentication(): void
     {
         $guard = config('auth_features.guard', 'web');
 
-        Route::get('login', fn(Request $request) => redirect('/spa/auth/login'))
+        Route::get('login', SpaController::class)
             ->middleware(['web', "guest:{$guard}"])
             ->name('login');
 
@@ -68,18 +68,18 @@ class AuthRouteRegistrar
     }
 
     /**
-     * Register registration routes: GET view redirect and POST store.
+     * Register registration routes: GET SPA shell and POST store.
      *
      *   register       GET  register  web, guest:web
      *   register.store POST register  web, guest:web
      *
-     * GET register redirects to the Vue SPA register page.
+     * GET register serves the Vue SPA shell (canonical URL).
      */
     public static function registration(): void
     {
         $guard = config('auth_features.guard', 'web');
 
-        Route::get('register', fn(Request $request) => redirect('/spa/auth/register'))
+        Route::get('register', SpaController::class)
             ->middleware(['web', "guest:{$guard}"])
             ->name('register');
 
@@ -99,14 +99,14 @@ class AuthRouteRegistrar
      *   password.reset   GET  reset-password/{token} web, guest:web
      *   password.update  POST reset-password         web, guest:web
      *
-     * GET routes redirect to the Vue SPA pages, preserving the token and
-     * any query parameters (e.g. email) in the redirect URL.
+     * GET routes serve the Vue SPA shell on canonical URLs (token and query
+     * string stay on the request URL for the client router).
      */
     public static function passwordReset(): void
     {
         $guard = config('auth_features.guard', 'web');
 
-        Route::get('forgot-password', fn(Request $request) => redirect('/spa/auth/forgot-password'))
+        Route::get('forgot-password', SpaController::class)
             ->middleware(['web', "guest:{$guard}"])
             ->name('password.request');
 
@@ -114,13 +114,12 @@ class AuthRouteRegistrar
             ->middleware(['web', "guest:{$guard}"])
             ->name('password.email');
 
-        Route::get('reset-password/{token}', function (Request $request, string $token) {
-            $query = $request->query() ? ('?' . http_build_query($request->query())) : '';
-
-            return redirect('/spa/auth/reset-password/' . rawurlencode($token) . $query);
-        })
+        Route::get('reset-password/{token}', SpaController::class)
             ->middleware(['web', "guest:{$guard}"])
             ->name('password.reset');
+
+        Route::get('reset-password', SpaController::class)
+            ->middleware(['web', "guest:{$guard}"]);
 
         Route::post('reset-password', [NewPasswordController::class, 'store'])
             ->middleware(['web', "guest:{$guard}"])
@@ -133,17 +132,22 @@ class AuthRouteRegistrar
     /**
      * Register password confirmation routes.
      *
-     *   password.confirm       GET  user/confirm-password          web, auth:web
+     *   password.confirm       GET  user/confirm-password          web, auth:web  (SPA shell)
      *   password.confirm.store POST user/confirm-password          web, auth:web
      *   password.confirmation  GET  user/confirmed-password-status web, auth:web
+     *
+     * GET confirm-password (no prefix) is an alternate SPA entry URL.
      */
     public static function passwordConfirmation(): void
     {
         $guard = config('auth_features.guard', 'web');
 
-        Route::get('user/confirm-password', [ConfirmablePasswordController::class, 'show'])
+        Route::get('user/confirm-password', SpaController::class)
             ->middleware(['web', "auth:{$guard}"])
             ->name('password.confirm');
+
+        Route::get('confirm-password', SpaController::class)
+            ->middleware(['web', "auth:{$guard}"]);
 
         Route::post('user/confirm-password', [ConfirmablePasswordController::class, 'store'])
             ->middleware(['web', "auth:{$guard}"])
@@ -278,6 +282,9 @@ class AuthRouteRegistrar
     public static function phoneVerification(): void
     {
         $guard = config('auth_features.guard', 'web');
+
+        Route::get('phone/verify', SpaController::class)
+            ->middleware(['web', "auth:{$guard}"]);
 
         Route::post('phone/verification-notification', PhoneVerificationNotificationController::class)
             ->middleware(['web', "auth:{$guard}", 'throttle:6,1'])

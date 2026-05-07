@@ -1,4 +1,4 @@
-import type { RouteRecordRaw } from 'vue-router';
+import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router';
 
 import AccountDeletePage from '@/account/pages/AccountDeletePage.vue';
 import AccountLoginCredentialsPage from '@/account/pages/AccountLoginCredentialsPage.vue';
@@ -18,6 +18,103 @@ import FormPage from '@/spa/pages/FormPage.vue';
 import OverviewPage from '@/spa/pages/OverviewPage.vue';
 import TablePage from '@/spa/pages/TablePage.vue';
 import ToastPage from '@/spa/pages/ToastPage.vue';
+
+/** Canonical public auth routes (Batch B). Legacy `/spa/auth/*` URLs redirect here. */
+const canonicalGuestAuthRoutes: RouteRecordRaw[] = [
+    {
+        path: '/login',
+        name: 'auth.login',
+        component: LoginPage,
+        meta: { layout: 'guest' },
+    },
+    {
+        path: '/register',
+        name: 'auth.register',
+        component: RegisterPage,
+        meta: { layout: 'guest' },
+    },
+    {
+        path: '/forgot-password',
+        name: 'auth.forgot-password',
+        component: ForgotPasswordPage,
+        meta: { layout: 'guest' },
+    },
+    {
+        path: '/reset-password/:token?',
+        name: 'auth.reset-password',
+        component: ResetPasswordPage,
+        meta: { layout: 'guest' },
+    },
+    {
+        path: '/email/verify',
+        name: 'auth.verify-email',
+        component: VerifyEmailPage,
+        meta: { layout: 'guest' },
+    },
+    {
+        path: '/phone/verify',
+        name: 'auth.verify-phone',
+        component: VerifyPhonePage,
+        meta: { layout: 'guest' },
+    },
+    {
+        path: '/two-factor-challenge',
+        name: 'auth.two-factor-challenge',
+        component: TwoFactorChallengePage,
+        meta: { layout: 'guest' },
+    },
+    {
+        path: '/user/confirm-password',
+        name: 'auth.confirm-password',
+        component: ConfirmPasswordPage,
+        meta: { layout: 'guest' },
+    },
+    {
+        path: '/confirm-password',
+        redirect: { path: '/user/confirm-password' },
+    },
+];
+
+const legacySpaAuthRedirects: RouteRecordRaw[] = [
+    { path: '/spa/auth/login', redirect: '/login' },
+    { path: '/spa/auth/register', redirect: '/register' },
+    { path: '/spa/auth/forgot-password', redirect: '/forgot-password' },
+    {
+        path: '/spa/auth/reset-password/:token?',
+        redirect: (to): RouteLocationRaw => {
+            const raw = to.params.token;
+            const token =
+                typeof raw === 'string'
+                    ? raw
+                    : Array.isArray(raw)
+                      ? raw[0]
+                      : '';
+            const path =
+                token !== '' ? `/reset-password/${token}` : '/reset-password';
+
+            return to.hash !== '' && to.hash !== undefined
+                ? {
+                      path,
+                      query: { ...to.query },
+                      hash: to.hash,
+                  }
+                : {
+                      path,
+                      query: { ...to.query },
+                  };
+        },
+    },
+    { path: '/spa/auth/verify-email', redirect: '/email/verify' },
+    { path: '/spa/auth/verify-phone', redirect: '/phone/verify' },
+    {
+        path: '/spa/auth/two-factor-challenge',
+        redirect: '/two-factor-challenge',
+    },
+    {
+        path: '/spa/auth/confirm-password',
+        redirect: '/user/confirm-password',
+    },
+];
 
 const routes: RouteRecordRaw[] = [
     {
@@ -44,54 +141,8 @@ const routes: RouteRecordRaw[] = [
         component: ToastPage,
         meta: { layout: 'demo' },
     },
-    {
-        path: '/spa/auth/login',
-        name: 'auth.login',
-        component: LoginPage,
-        meta: { layout: 'guest' },
-    },
-    {
-        path: '/spa/auth/register',
-        name: 'auth.register',
-        component: RegisterPage,
-        meta: { layout: 'guest' },
-    },
-    {
-        path: '/spa/auth/forgot-password',
-        name: 'auth.forgot-password',
-        component: ForgotPasswordPage,
-        meta: { layout: 'guest' },
-    },
-    {
-        path: '/spa/auth/reset-password/:token?',
-        name: 'auth.reset-password',
-        component: ResetPasswordPage,
-        meta: { layout: 'guest' },
-    },
-    {
-        path: '/spa/auth/verify-email',
-        name: 'auth.verify-email',
-        component: VerifyEmailPage,
-        meta: { layout: 'guest' },
-    },
-    {
-        path: '/spa/auth/verify-phone',
-        name: 'auth.verify-phone',
-        component: VerifyPhonePage,
-        meta: { layout: 'guest' },
-    },
-    {
-        path: '/spa/auth/two-factor-challenge',
-        name: 'auth.two-factor-challenge',
-        component: TwoFactorChallengePage,
-        meta: { layout: 'guest' },
-    },
-    {
-        path: '/spa/auth/confirm-password',
-        name: 'auth.confirm-password',
-        component: ConfirmPasswordPage,
-        meta: { layout: 'guest' },
-    },
+    ...canonicalGuestAuthRoutes,
+    ...legacySpaAuthRedirects,
     {
         path: '/spa/auth/security',
         name: 'auth.security',

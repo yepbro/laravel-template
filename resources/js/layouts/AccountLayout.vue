@@ -23,7 +23,7 @@ useHead({
 
 async function handleLogout(): Promise<void> {
     await logout();
-    await router.push('/spa/auth/login');
+    await router.push('/login');
 }
 </script>
 

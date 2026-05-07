@@ -12,33 +12,58 @@ vi.mock('@unhead/vue', () => ({
 }));
 
 // ------------------------------------------------------------------
-// Router: auth route registration
+// Router: canonical auth route registration
 // ------------------------------------------------------------------
 
 describe('spa router auth routes', () => {
     const paths = router.getRoutes().map((r) => r.path);
 
-    it('registers /spa/auth/login', () => {
+    it('registers canonical /login', () => {
+        expect(paths).toContain('/login');
+    });
+
+    it('registers canonical /register', () => {
+        expect(paths).toContain('/register');
+    });
+
+    it('registers canonical /forgot-password', () => {
+        expect(paths).toContain('/forgot-password');
+    });
+
+    it('registers canonical /reset-password/:token?', () => {
+        expect(paths).toContain('/reset-password/:token?');
+    });
+
+    it('registers canonical /email/verify', () => {
+        expect(paths).toContain('/email/verify');
+    });
+
+    it('registers canonical /phone/verify', () => {
+        expect(paths).toContain('/phone/verify');
+    });
+
+    // Legacy URLs remain as redirect stubs for bookmarks and older links.
+    it('registers legacy /spa/auth/login redirect', () => {
         expect(paths).toContain('/spa/auth/login');
     });
 
-    it('registers /spa/auth/register', () => {
+    it('registers legacy /spa/auth/register redirect', () => {
         expect(paths).toContain('/spa/auth/register');
     });
 
-    it('registers /spa/auth/forgot-password', () => {
+    it('registers legacy /spa/auth/forgot-password redirect', () => {
         expect(paths).toContain('/spa/auth/forgot-password');
     });
 
-    it('registers /spa/auth/reset-password/:token?', () => {
+    it('registers legacy /spa/auth/reset-password/:token? redirect', () => {
         expect(paths).toContain('/spa/auth/reset-password/:token?');
     });
 
-    it('registers /spa/auth/verify-email', () => {
+    it('registers legacy /spa/auth/verify-email redirect', () => {
         expect(paths).toContain('/spa/auth/verify-email');
     });
 
-    it('registers /spa/auth/verify-phone', () => {
+    it('registers legacy /spa/auth/verify-phone redirect', () => {
         expect(paths).toContain('/spa/auth/verify-phone');
     });
 
@@ -59,11 +84,11 @@ describe('spa router auth routes', () => {
         expect(paths).toContain('/spa/toast');
     });
 
-    it('registers /spa/auth/two-factor-challenge', () => {
+    it('registers legacy /spa/auth/two-factor-challenge redirect', () => {
         expect(paths).toContain('/spa/auth/two-factor-challenge');
     });
 
-    it('registers /spa/auth/confirm-password', () => {
+    it('registers legacy /spa/auth/confirm-password redirect', () => {
         expect(paths).toContain('/spa/auth/confirm-password');
     });
 
@@ -77,20 +102,41 @@ describe('spa router auth routes', () => {
 // ------------------------------------------------------------------
 
 describe('spa router auth route resolution', () => {
-    it('resolves /spa/auth/login to auth.login', async () => {
-        await router.push('/spa/auth/login');
+    it('resolves /login to auth.login', async () => {
+        await router.push('/login');
         expect(router.currentRoute.value.name).toBe('auth.login');
     });
 
-    it('resolves /spa/auth/register to auth.register', async () => {
-        await router.push('/spa/auth/register');
+    it('resolves legacy /spa/auth/login to auth.login', async () => {
+        await router.push('/spa/auth/login');
+        expect(router.currentRoute.value.name).toBe('auth.login');
+        expect(router.currentRoute.value.path).toBe('/login');
+    });
+
+    it('resolves /register to auth.register', async () => {
+        await router.push('/register');
         expect(router.currentRoute.value.name).toBe('auth.register');
     });
 
-    it('resolves /spa/auth/reset-password/sometoken with token param', async () => {
+    it('resolves /reset-password/sometoken with token param', async () => {
+        await router.push('/reset-password/sometoken');
+        expect(router.currentRoute.value.name).toBe('auth.reset-password');
+        expect(router.currentRoute.value.params.token).toBe('sometoken');
+    });
+
+    it('resolves legacy reset-password path with token param', async () => {
         await router.push('/spa/auth/reset-password/sometoken');
         expect(router.currentRoute.value.name).toBe('auth.reset-password');
         expect(router.currentRoute.value.params.token).toBe('sometoken');
+    });
+
+    it('preserves email query when resolving legacy reset-password', async () => {
+        await router.push(
+            '/spa/auth/reset-password/sometoken?email=user%40example.com',
+        );
+        expect(router.currentRoute.value.name).toBe('auth.reset-password');
+        expect(router.currentRoute.value.params.token).toBe('sometoken');
+        expect(router.currentRoute.value.query.email).toBe('user@example.com');
     });
 });
 
@@ -120,8 +166,8 @@ describe('spa router account routes', () => {
         expect(router.currentRoute.value.meta.requiresAuth).toBe(true);
     });
 
-    it('uses guest layout for auth login', async () => {
-        await router.push('/spa/auth/login');
+    it('uses guest layout for canonical auth login', async () => {
+        await router.push('/login');
         expect(router.currentRoute.value.meta.layout).toBe('guest');
     });
 
@@ -151,20 +197,20 @@ function mountDemoLayout() {
 }
 
 describe('DemoLayout navigation', () => {
-    it('renders a Login link pointing to /spa/auth/login', () => {
+    it('renders a Login link pointing to /login', () => {
         const wrapper = mountDemoLayout();
         const linkTos = wrapper
             .findAll('router-link-stub')
             .map((el) => el.attributes('to'));
-        expect(linkTos).toContain('/spa/auth/login');
+        expect(linkTos).toContain('/login');
     });
 
-    it('renders a Register link pointing to /spa/auth/register', () => {
+    it('renders a Register link pointing to /register', () => {
         const wrapper = mountDemoLayout();
         const linkTos = wrapper
             .findAll('router-link-stub')
             .map((el) => el.attributes('to'));
-        expect(linkTos).toContain('/spa/auth/register');
+        expect(linkTos).toContain('/register');
     });
 
     it('retains all original demo navigation links', () => {

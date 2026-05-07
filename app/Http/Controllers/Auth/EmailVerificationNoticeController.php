@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Auth\AuthFeatures;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\SpaController;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,11 +19,11 @@ use Illuminate\Http\Response;
  * Phone-only accounts (no email) are not eligible for email verification
  * and receive a 422 / session error rather than the normal notice.
  * Already-verified users are redirected home. Unverified email users
- * receive the verification view (web) or a 200 JSON response (SPA).
+ * receive the Vue SPA shell (web) or a 200 JSON response (SPA API).
  */
 class EmailVerificationNoticeController extends Controller
 {
-    public function __invoke(Request $request): Response|JsonResponse|RedirectResponse
+    public function __invoke(Request $request): Response|JsonResponse|RedirectResponse|View
     {
         $features = AuthFeatures::make();
 
@@ -48,7 +50,7 @@ class EmailVerificationNoticeController extends Controller
             return redirect($features->home());
         }
 
-        return response()->view('auth.verify-email');
+        return app(SpaController::class)();
     }
 
     private function noEmailResponse(Request $request): JsonResponse|RedirectResponse
