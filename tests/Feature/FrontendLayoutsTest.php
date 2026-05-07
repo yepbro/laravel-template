@@ -31,8 +31,14 @@ class FrontendLayoutsTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk();
-        $response->assertSee('Laravel Frontend Playground');
-        $response->assertSee('A compact starter for trying different frontend approaches in Laravel.');
+        $response->assertSee('Laravel Frontend Playground', false);
+        $response->assertSee('Clean Laravel frontends', false);
+        $response->assertSee(
+            'A clean starting point for building modern Laravel applications with Tailwind and contemporary UI practices.',
+            false,
+        );
+        $response->assertSee(route('login'), false);
+        $response->assertSee(route('register'), false);
         $response->assertDontSee('href="/spa"', false);
         $response->assertDontSee('href="/islands"', false);
     }
