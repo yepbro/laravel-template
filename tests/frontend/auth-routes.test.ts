@@ -36,6 +36,10 @@ vi.mock('@unhead/vue', () => ({
 describe('spa router auth routes', () => {
     const paths = router.getRoutes().map((r) => r.path);
 
+    it('registers home /', () => {
+        expect(paths).toContain('/');
+    });
+
     it('registers canonical /login', () => {
         expect(paths).toContain('/login');
     });
@@ -120,6 +124,12 @@ describe('spa router auth routes', () => {
 // ------------------------------------------------------------------
 
 describe('spa router auth route resolution', () => {
+    it('resolves / to home with landing layout', async () => {
+        await router.push('/');
+        expect(router.currentRoute.value.name).toBe('home');
+        expect(router.currentRoute.value.meta.layout).toBe('landing');
+    });
+
     it('resolves /login to auth.login', async () => {
         await router.push('/login');
         expect(router.currentRoute.value.name).toBe('auth.login');

@@ -1,8 +1,10 @@
-import { shallowMount } from '@vue/test-utils';
+import { mount, shallowMount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import App from '@/App.vue';
+import LandingLayout from '@/layouts/LandingLayout.vue';
+import { createSharedI18n } from '@/shared/i18n';
 
 function layoutStubTestId(layout: string): string {
     return `layout-${layout}`;
@@ -131,6 +133,34 @@ describe('App', () => {
         expect(
             wrapper.find(`[data-test="${layoutStubTestId('demo')}"]`).exists(),
         ).toBe(true);
+    });
+
+    it('selects the landing layout from route meta', async () => {
+        const router = createRouter({
+            history: createMemoryHistory(),
+            routes: [
+                {
+                    path: '/',
+                    component: { template: '<div />' },
+                    meta: { layout: 'landing' },
+                },
+            ],
+        });
+
+        await router.push('/');
+
+        const wrapper = mount(App, {
+            global: {
+                plugins: [router, createSharedI18n()],
+                stubs: {
+                    RouterView: { template: '<div data-test="router-view" />' },
+                },
+            },
+        });
+
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.findComponent(LandingLayout).exists()).toBe(true);
     });
 
     it('falls back to the demo layout for unknown meta.layout values', async () => {

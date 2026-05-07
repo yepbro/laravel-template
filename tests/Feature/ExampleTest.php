@@ -15,7 +15,7 @@ class ExampleTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertViewIs('home')
+            ->assertViewIs('spa')
             ->assertViewHas('title', 'Laravel Frontend Playground');
     }
 }

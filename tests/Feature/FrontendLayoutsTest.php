@@ -30,20 +30,13 @@ class FrontendLayoutsTest extends TestCase
         $this->assertSame(HomeController::class, $route->getActionName());
     }
 
-    public function test_root_page_renders_centered_home_stub_without_showcase_links(): void
+    public function test_root_page_serves_vue_shell(): void
     {
         $response = $this->get('/');
 
         $response->assertOk();
+        $response->assertSee('id="app"', false);
         $response->assertSee('Laravel Frontend Playground', false);
-        $response->assertSee('Clean Laravel frontends', false);
-        $response->assertSee(
-            'A clean starting point for building modern Laravel applications with Tailwind and contemporary UI practices.',
-            false,
-        );
-        $response->assertSee(route('login'), false);
-        $response->assertSee(route('register'), false);
-        $response->assertDontSee('href="/spa"', false);
         $response->assertDontSee('href="/islands"', false);
     }
 

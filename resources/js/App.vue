@@ -5,6 +5,7 @@ import { RouterView, useRoute } from 'vue-router';
 import AccountLayout from '@/layouts/AccountLayout.vue';
 import AuthGuestLayout from '@/layouts/AuthGuestLayout.vue';
 import DemoLayout from '@/layouts/DemoLayout.vue';
+import LandingLayout from '@/layouts/LandingLayout.vue';
 
 const route = useRoute();
 
@@ -12,6 +13,7 @@ const layoutMap = {
     guest: AuthGuestLayout,
     account: AccountLayout,
     demo: DemoLayout,
+    landing: LandingLayout,
 } as const;
 
 type LayoutKey = keyof typeof layoutMap;

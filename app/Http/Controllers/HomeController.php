@@ -10,8 +10,12 @@ class HomeController extends Controller
 {
     public function __invoke(): View
     {
-        return view('home', [
+        return view('spa', [
             'title' => 'Laravel Frontend Playground',
+            'vite' => [
+                'resources/css/app.css',
+                'resources/js/app.ts',
+            ],
         ]);
     }
 }

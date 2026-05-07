@@ -17,6 +17,7 @@ import VerifyEmailPage from '@/auth/pages/VerifyEmailPage.vue';
 import VerifyPhonePage from '@/auth/pages/VerifyPhonePage.vue';
 import { createSpaRouter } from '@/shared/createRouter';
 import FormPage from '@/spa/pages/FormPage.vue';
+import HomePage from '@/spa/pages/HomePage.vue';
 import OverviewPage from '@/spa/pages/OverviewPage.vue';
 import TablePage from '@/spa/pages/TablePage.vue';
 import ToastPage from '@/spa/pages/ToastPage.vue';
@@ -120,6 +121,12 @@ const legacySpaAuthRedirects: RouteRecordRaw[] = [
 ];
 
 const routes: RouteRecordRaw[] = [
+    {
+        path: '/',
+        name: 'home',
+        component: HomePage,
+        meta: { layout: 'landing' },
+    },
     {
         path: '/spa',
         name: 'spa.overview',
