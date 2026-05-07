@@ -18,13 +18,29 @@ class CurrentUserController
         /** @var User $user */
         $user = $request->user();
 
+        $emailVerifiedAt = $user->email_verified_at;
+        $phoneVerifiedAt = $user->phone_verified_at;
+
         return new JsonResponse([
             'id'                => $user->getKey(),
             'name'              => $user->name,
             'email'             => $user->email,
             'phone'             => $user->phone,
-            'email_verified_at' => $user->email_verified_at?->toIso8601String(),
-            'phone_verified_at' => $user->phone_verified_at?->toIso8601String(),
+            'email_verified_at' => self::formatVerificationTimestamp($emailVerifiedAt),
+            'phone_verified_at' => self::formatVerificationTimestamp($phoneVerifiedAt),
         ]);
+    }
+
+    private static function formatVerificationTimestamp(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format(\DATE_ATOM);
+        }
+
+        if (is_string($value) && $value !== '') {
+            return $value;
+        }
+
+        return null;
     }
 }

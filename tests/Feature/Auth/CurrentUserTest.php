@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CurrentUserTest extends TestCase
 {
+    use RefreshDatabase;
     public function test_guest_cannot_fetch_current_user_json(): void
     {
         $this->getJson('/user')->assertUnauthorized();

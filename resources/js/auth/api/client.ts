@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import type {
     ConfirmPasswordData,
+    DeleteAccountData,
     ForgotPasswordData,
     LoginData,
     PhoneVerificationData,
@@ -14,7 +15,9 @@ import type {
 } from '@/auth/schemas';
 
 export const ENDPOINTS = {
+    /** GET current session user (SPA). */
     currentUser: '/user',
+    deleteAccount: '/user',
     login: '/login',
     logout: '/logout',
     register: '/register',
@@ -182,6 +185,24 @@ export async function login(
 export async function logout(): Promise<void> {
     await client.post(ENDPOINTS.logout);
     clearCurrentUserCache();
+}
+
+export async function deleteAccount(data: DeleteAccountData): Promise<{
+    redirect: string;
+}> {
+    const response = await client.delete<{ redirect: string }>(
+        ENDPOINTS.deleteAccount,
+        { data },
+    );
+    clearCurrentUserCache();
+
+    const payload = response.data;
+
+    if (payload === undefined) {
+        return { redirect: '/login' };
+    }
+
+    return payload;
 }
 
 export async function register(data: RegisterData): Promise<void> {

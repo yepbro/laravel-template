@@ -110,6 +110,11 @@ async function handleLogout(): Promise<void> {
                             Profile
                         </DropdownMenuItem>
                         <DropdownMenuItem
+                            @click="router.push('/account/security')"
+                        >
+                            Security
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                             @click="router.push('/account/password')"
                         >
                             Password

@@ -11,6 +11,7 @@ use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -24,6 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail, MustVerifyPhone, 
     use MustVerifyEmailTrait;
     use Notifiable;
     use PasskeyAuthenticatable;
+    use SoftDeletes;
 
     /**
      * @var list<string>

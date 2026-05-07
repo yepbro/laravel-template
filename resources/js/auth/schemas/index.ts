@@ -88,6 +88,12 @@ export const updatePasswordSchema = z
 
 export type UpdatePasswordData = z.infer<typeof updatePasswordSchema>;
 
+export const deleteAccountSchema = z.object({
+    current_password: z.string().min(1, 'Current password is required.'),
+});
+
+export type DeleteAccountData = z.infer<typeof deleteAccountSchema>;
+
 // Default: email mode (matches current backend registration_mode = 'email').
 // Email is required; phone is optional.
 export const updateProfileSchema = z.object({

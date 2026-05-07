@@ -116,6 +116,7 @@ const legacySpaAuthRedirects: RouteRecordRaw[] = [
         path: '/spa/auth/confirm-password',
         redirect: '/user/confirm-password',
     },
+    { path: '/spa/auth/security', redirect: '/account/security' },
 ];
 
 const routes: RouteRecordRaw[] = [
@@ -146,12 +147,6 @@ const routes: RouteRecordRaw[] = [
     ...canonicalGuestAuthRoutes,
     ...legacySpaAuthRedirects,
     {
-        path: '/spa/auth/security',
-        name: 'auth.security',
-        component: SecuritySettingsPage,
-        meta: { layout: 'guest' },
-    },
-    {
         path: '/account',
         name: 'account.dashboard',
         component: DashboardPage,
@@ -167,6 +162,12 @@ const routes: RouteRecordRaw[] = [
         path: '/account/password',
         name: 'account.password',
         component: AccountPasswordPage,
+        meta: { layout: 'account', requiresAuth: true },
+    },
+    {
+        path: '/account/security',
+        name: 'auth.security',
+        component: SecuritySettingsPage,
         meta: { layout: 'account', requiresAuth: true },
     },
     {

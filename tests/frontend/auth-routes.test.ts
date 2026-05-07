@@ -108,7 +108,7 @@ describe('spa router auth routes', () => {
         expect(paths).toContain('/spa/auth/confirm-password');
     });
 
-    it('registers /spa/auth/security', () => {
+    it('registers legacy /spa/auth/security redirect stub', () => {
         expect(paths).toContain('/spa/auth/security');
     });
 });
@@ -175,6 +175,10 @@ describe('spa router account routes', () => {
         expect(paths).toContain('/account/login-credentials');
     });
 
+    it('registers /account/security', () => {
+        expect(paths).toContain('/account/security');
+    });
+
     it('registers /account/delete', () => {
         expect(paths).toContain('/account/delete');
     });
@@ -182,6 +186,15 @@ describe('spa router account routes', () => {
     it('resolves /account with account dashboard meta', async () => {
         await router.push('/account');
         expect(router.currentRoute.value.name).toBe('account.dashboard');
+        expect(router.currentRoute.value.meta.layout).toBe('account');
+        expect(router.currentRoute.value.meta.requiresAuth).toBe(true);
+    });
+
+    it('resolves authenticated security settings under account layout', async () => {
+        await router.push('/spa/auth/security');
+
+        expect(router.currentRoute.value.path).toBe('/account/security');
+        expect(router.currentRoute.value.name).toBe('auth.security');
         expect(router.currentRoute.value.meta.layout).toBe('account');
         expect(router.currentRoute.value.meta.requiresAuth).toBe(true);
     });
@@ -251,11 +264,11 @@ describe('DemoLayout navigation', () => {
         expect(linkTos).toContain('/spa/toast');
     });
 
-    it('renders a Security link pointing to /spa/auth/security', () => {
+    it('renders a Security link pointing to /account/security', () => {
         const wrapper = mountDemoLayout();
         const linkTos = wrapper
             .findAll('router-link-stub')
             .map((el) => el.attributes('to'));
-        expect(linkTos).toContain('/spa/auth/security');
+        expect(linkTos).toContain('/account/security');
     });
 });

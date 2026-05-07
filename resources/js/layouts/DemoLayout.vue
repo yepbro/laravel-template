@@ -37,7 +37,7 @@ const navigation = [
     },
     {
         label: 'Security',
-        to: '/spa/auth/security',
+        to: '/account/security',
     },
 ];
 
