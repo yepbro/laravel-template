@@ -6,10 +6,12 @@ namespace Tests\Feature\Auth;
 
 use App\Http\Controllers\Auth\PasswordController;
 use App\Models\User;
+use App\Notifications\Auth\PasswordChanged;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -53,6 +55,21 @@ class PasswordUpdateCoreTest extends TestCase
 
         $user->refresh();
         $this->assertTrue(Hash::check('NewPassword1!', $user->password));
+    }
+
+    public function test_password_update_sends_password_changed_notification(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->emailOnly()->create();
+
+        $this->actingAs($user)->putJson(self::UPDATE_URI, [
+            'current_password'      => 'password',
+            'password'              => 'NewPassword1!',
+            'password_confirmation' => 'NewPassword1!',
+        ])->assertStatus(200);
+
+        Notification::assertSentTo($user, PasswordChanged::class);
     }
 
     // -- Wrong current password --------------------------------------------------

@@ -14,6 +14,8 @@ vi.mock('@/auth/api/client', async (importActual) => {
             phone: null,
             email_verified_at: null,
             phone_verified_at: null,
+            allows_email_login_credential_change: true,
+            allows_phone_login_credential_change: false,
         }),
     };
 });

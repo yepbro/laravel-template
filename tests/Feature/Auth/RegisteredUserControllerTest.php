@@ -6,9 +6,11 @@ namespace Tests\Feature\Auth;
 
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Models\User;
+use App\Notifications\Auth\WelcomeNewUser;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -28,6 +30,8 @@ class RegisteredUserControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        Notification::fake();
 
         Route::post(self::TEST_URI, RegisteredUserController::class)
             ->middleware(['web']);
@@ -339,6 +343,20 @@ class RegisteredUserControllerTest extends TestCase
         Event::assertDispatched(Registered::class, function (Registered $event): bool {
             return $event->user->email === 'user@example.com';
         });
+
+        Notification::assertNothingSent();
+    }
+
+    public function test_welcome_notification_sent_when_email_verification_disabled(): void
+    {
+        config(['auth_features.registration_mode' => 'email']);
+        config(['auth_features.features.email_verification' => false]);
+
+        $this->postJson(self::TEST_URI, $this->validEmailPayload())->assertStatus(201);
+
+        $user = User::query()->where('email', 'user@example.com')->first();
+        $this->assertNotNull($user);
+        Notification::assertSentTo($user, WelcomeNewUser::class);
     }
 
     // -- Session -----------------------------------------------------------------

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Auth\AuthFeatures;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,14 +21,17 @@ class CurrentUserController
 
         $emailVerifiedAt = $user->email_verified_at;
         $phoneVerifiedAt = $user->phone_verified_at;
+        $features          = AuthFeatures::make();
 
         return new JsonResponse([
-            'id'                => $user->getKey(),
-            'name'              => $user->name,
-            'email'             => $user->email,
-            'phone'             => $user->phone,
-            'email_verified_at' => self::formatVerificationTimestamp($emailVerifiedAt),
-            'phone_verified_at' => self::formatVerificationTimestamp($phoneVerifiedAt),
+            'id'                                   => $user->getKey(),
+            'name'                                 => $user->name,
+            'email'                                => $user->email,
+            'phone'                                => $user->phone,
+            'email_verified_at'                    => self::formatVerificationTimestamp($emailVerifiedAt),
+            'phone_verified_at'                    => self::formatVerificationTimestamp($phoneVerifiedAt),
+            'allows_email_login_credential_change' => $features->allowsEmailRegistration(),
+            'allows_phone_login_credential_change'  => $features->allowsPhoneRegistration(),
         ]);
     }
 

@@ -15,6 +15,7 @@ import {
     loginSchema,
     phoneVerificationSchema,
     registerSchema,
+    registerSchemaForMode,
     resetPasswordSchema,
     twoFactorChallengeSchema,
     twoFactorConfirmSchema,
@@ -93,6 +94,79 @@ describe('registerSchema', () => {
             password_confirmation: 'password',
         });
         expect(result.success).toBe(false);
+    });
+});
+
+describe('registerSchemaForMode', () => {
+    const base = {
+        name: 'Taylor',
+        password: 'password',
+        password_confirmation: 'password',
+    };
+
+    it('requires email only in email mode', () => {
+        const schema = registerSchemaForMode('email');
+
+        expect(
+            schema.safeParse({ ...base, email: '', phone: '+15550001111' })
+                .success,
+        ).toBe(false);
+
+        expect(
+            schema.safeParse({
+                ...base,
+                email: 'taylor@example.com',
+                phone: '',
+            }).success,
+        ).toBe(true);
+    });
+
+    it('requires phone only in phone mode', () => {
+        const schema = registerSchemaForMode('phone');
+
+        expect(
+            schema.safeParse({
+                ...base,
+                email: 'taylor@example.com',
+                phone: '',
+            }).success,
+        ).toBe(false);
+
+        expect(
+            schema.safeParse({
+                ...base,
+                email: '',
+                phone: '+15550001111',
+            }).success,
+        ).toBe(true);
+    });
+
+    it('requires both email and phone in both mode', () => {
+        const schema = registerSchemaForMode('both');
+
+        expect(
+            schema.safeParse({
+                ...base,
+                email: 'taylor@example.com',
+                phone: '',
+            }).success,
+        ).toBe(false);
+
+        expect(
+            schema.safeParse({
+                ...base,
+                email: '',
+                phone: '+15550001111',
+            }).success,
+        ).toBe(false);
+
+        expect(
+            schema.safeParse({
+                ...base,
+                email: 'taylor@example.com',
+                phone: '+15550001111',
+            }).success,
+        ).toBe(true);
     });
 });
 

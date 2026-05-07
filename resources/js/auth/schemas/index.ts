@@ -8,20 +8,81 @@ export const loginSchema = z.object({
 
 export type LoginData = z.infer<typeof loginSchema>;
 
-export const registerSchema = z
-    .object({
-        name: z.string().min(1, 'Name is required.'),
-        email: z
-            .string()
-            .email('Must be a valid email.')
-            .optional()
-            .or(z.literal('')),
-        phone: z.string().optional(),
-        password: z.string().min(8, 'Password must be at least 8 characters.'),
-        password_confirmation: z
-            .string()
-            .min(1, 'Please confirm your password.'),
-    })
+const registerFieldsSchema = z.object({
+    name: z.string().min(1, 'Name is required.'),
+    email: z
+        .string()
+        .email('Must be a valid email.')
+        .optional()
+        .or(z.literal('')),
+    phone: z.string().optional(),
+    password: z.string().min(8, 'Password must be at least 8 characters.'),
+    password_confirmation: z.string().min(1, 'Please confirm your password.'),
+});
+
+/** Matches `registration_mode` from config/auth_features.php ("email"|"phone"|"both"). */
+export type AuthRegistrationMode = 'email' | 'phone' | 'both';
+
+export function registerSchemaForMode(mode: AuthRegistrationMode) {
+    let withCredentials;
+
+    switch (mode) {
+        case 'email':
+            withCredentials = registerFieldsSchema.refine(
+                (data) =>
+                    typeof data.email === 'string' && data.email.trim() !== '',
+                {
+                    message: 'Email is required.',
+                    path: ['email'],
+                },
+            );
+
+            break;
+        case 'phone':
+            withCredentials = registerFieldsSchema.refine(
+                (data) =>
+                    typeof data.phone === 'string' && data.phone.trim() !== '',
+                {
+                    message: 'Phone number is required.',
+                    path: ['phone'],
+                },
+            );
+
+            break;
+        case 'both':
+            withCredentials = registerFieldsSchema
+                .refine(
+                    (data) =>
+                        typeof data.email === 'string' &&
+                        data.email.trim() !== '',
+                    {
+                        message: 'Email is required.',
+                        path: ['email'],
+                    },
+                )
+                .refine(
+                    (data) =>
+                        typeof data.phone === 'string' &&
+                        data.phone.trim() !== '',
+                    {
+                        message: 'Phone number is required.',
+                        path: ['phone'],
+                    },
+                );
+
+            break;
+    }
+
+    return withCredentials.refine(
+        (data) => data.password === data.password_confirmation,
+        {
+            message: 'Passwords do not match.',
+            path: ['password_confirmation'],
+        },
+    );
+}
+
+export const registerSchema = registerFieldsSchema
     .refine((data) => Boolean(data.email) || Boolean(data.phone), {
         message: 'An email address or phone number is required.',
         path: ['email'],
@@ -93,6 +154,27 @@ export const deleteAccountSchema = z.object({
 });
 
 export type DeleteAccountData = z.infer<typeof deleteAccountSchema>;
+
+export const requestLoginCredentialEmailChangeSchema = z.object({
+    email: z
+        .string()
+        .min(1, 'Email is required.')
+        .email('Must be a valid email.'),
+    current_password: z.string().min(1, 'Current password is required.'),
+});
+
+export type RequestLoginCredentialEmailChangeData = z.infer<
+    typeof requestLoginCredentialEmailChangeSchema
+>;
+
+export const requestLoginCredentialPhoneChangeSchema = z.object({
+    phone: z.string().min(1, 'Phone is required.'),
+    current_password: z.string().min(1, 'Current password is required.'),
+});
+
+export type RequestLoginCredentialPhoneChangeData = z.infer<
+    typeof requestLoginCredentialPhoneChangeSchema
+>;
 
 // Default: email mode (matches current backend registration_mode = 'email').
 // Email is required; phone is optional.

@@ -7,12 +7,15 @@ namespace Tests\Feature;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SpaController;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class FrontendLayoutsTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();

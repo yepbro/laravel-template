@@ -33,6 +33,10 @@ class CurrentUserTest extends TestCase
         $response->assertJsonStructure([
             'email_verified_at',
             'phone_verified_at',
+            'allows_email_login_credential_change',
+            'allows_phone_login_credential_change',
         ]);
+        $response->assertJsonPath('allows_email_login_credential_change', true);
+        $response->assertJsonPath('allows_phone_login_credential_change', false);
     }
 }

@@ -95,6 +95,10 @@ class FortifyParityRouteTest extends TestCase
             'user-password.update PUT'            => ['user-password.update',            'user/password',            ['PUT'], ['web', 'auth:web']],
             'user-profile-information.update PUT' => ['user-profile-information.update', 'user/profile-information', ['PUT'], ['web', 'auth:web']],
 
+            // -- Login credential change (email + signed confirm) -------------
+            'user.login-credentials.email POST' => ['user.login-credentials.email', 'user/login-credentials/email', ['POST'], ['web', 'auth:web', 'throttle:6,1']],
+            'user.login-credentials.confirm GET' => ['user.login-credentials.confirm', 'user/login-credentials/confirm/{token}', ['GET'], ['web', 'signed', 'throttle:6,1']],
+
             // -- Two-Factor Challenge (pre-auth) ------------------------------
             'two-factor.login GET'        => ['two-factor.login',       'two-factor-challenge', ['GET'],  ['web', 'guest:web']],
             'two-factor.login.store POST' => ['two-factor.login.store', 'two-factor-challenge', ['POST'], ['web', 'guest:web', 'throttle:two-factor']],
@@ -198,6 +202,8 @@ class FortifyParityRouteTest extends TestCase
             'password.confirmation',
             'user-password.update',
             'user-profile-information.update',
+            'user.login-credentials.email',
+            'user.login-credentials.confirm',
             'two-factor.login.store',
             'two-factor.enable',
             'two-factor.confirm',

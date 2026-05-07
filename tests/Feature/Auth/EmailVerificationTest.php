@@ -6,6 +6,7 @@ namespace Tests\Feature\Auth;
 
 use App\Auth\Routing\AuthRouteRegistrar;
 use App\Models\User;
+use App\Notifications\Auth\WelcomeNewUser;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -61,7 +62,7 @@ class EmailVerificationTest extends TestCase
         Notification::assertSentTo($user, VerifyEmail::class);
     }
 
-    public function test_notification_not_sent_on_registered_when_feature_disabled(): void
+    public function test_welcome_notification_sent_on_registered_when_feature_disabled(): void
     {
         config(['auth_features.features.email_verification' => false]);
         Notification::fake();
@@ -70,7 +71,7 @@ class EmailVerificationTest extends TestCase
 
         event(new Registered($user));
 
-        Notification::assertNothingSent();
+        Notification::assertSentTo($user, WelcomeNewUser::class);
     }
 
     public function test_notification_not_sent_on_registered_for_phone_only_user(): void

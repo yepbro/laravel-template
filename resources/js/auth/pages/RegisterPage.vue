@@ -1,60 +1,51 @@
 <script setup lang="ts">
-import { toTypedSchema } from '@vee-validate/zod';
-import axios from 'axios';
-import { useForm } from 'vee-validate';
-import { ref } from 'vue';
-import { RouterLink, useRouter } from 'vue-router';
+import { computed, onMounted, ref } from 'vue';
 
-import { normalizeErrors, register } from '@/auth/api/client';
+import { fetchAuthFeatures } from '@/auth/api/client';
 import AuthCard from '@/auth/components/AuthCard.vue';
-import { registerSchema } from '@/auth/schemas';
+import RegisterAccountFields from '@/auth/components/RegisterAccountFields.vue';
+import type { AuthRegistrationMode } from '@/auth/schemas';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 
-const router = useRouter();
+function parseRegistrationMode(raw: unknown): AuthRegistrationMode | null {
+    if (raw === 'email' || raw === 'phone' || raw === 'both') {
+        return raw;
+    }
 
-const generalError = ref('');
-const isSubmitting = ref(false);
+    return null;
+}
 
-const form = useForm({
-    validationSchema: toTypedSchema(registerSchema),
-    initialValues: {
-        name: '',
-        email: '',
-        phone: '',
-        password: '',
-        password_confirmation: '',
-    },
-});
+const featuresLoaded = ref(false);
+const loadErrorMessage = ref('');
+const registrationMode = ref<AuthRegistrationMode | null>(null);
 
-const onSubmit = form.handleSubmit(async (values) => {
-    generalError.value = '';
-    isSubmitting.value = true;
+const formReady = computed(
+    () => Boolean(featuresLoaded.value) && registrationMode.value !== null,
+);
+
+onMounted(async () => {
+    loadErrorMessage.value = '';
 
     try {
-        await register(values);
-        await router.push('/spa');
-    } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 422) {
-            form.setErrors(normalizeErrors(error.response.data.errors ?? {}));
-        } else if (axios.isAxiosError(error) && error.response?.data?.message) {
-            generalError.value = error.response.data.message;
-        } else {
-            generalError.value =
-                'An unexpected error occurred. Please try again.';
+        const snapshot = await fetchAuthFeatures();
+        const mode = parseRegistrationMode(snapshot.registration_mode);
+
+        if (mode === null) {
+            loadErrorMessage.value =
+                'Registration is not configured correctly on this deployment.';
+            registrationMode.value = null;
+
+            return;
         }
+
+        registrationMode.value = mode;
+    } catch {
+        loadErrorMessage.value =
+            'Unable to load registration options. Refresh and try again.';
+        registrationMode.value = null;
     } finally {
-        isSubmitting.value = false;
+        featuresLoaded.value = true;
     }
 });
 </script>
@@ -64,104 +55,22 @@ const onSubmit = form.handleSubmit(async (values) => {
         title="Create account"
         description="Fill in the details below to get started."
     >
-        <form class="flex flex-col gap-4" @submit.prevent="onSubmit">
-            <Alert v-if="generalError" variant="destructive">
-                <AlertDescription>{{ generalError }}</AlertDescription>
+        <div v-if="!featuresLoaded" class="flex flex-col gap-4">
+            <div class="flex items-center gap-2 text-muted-foreground">
+                <Spinner class="size-4" />
+                <span class="text-sm">Loading registration form…</span>
+            </div>
+        </div>
+
+        <template v-else>
+            <Alert v-if="!formReady" variant="destructive">
+                <AlertDescription>{{ loadErrorMessage }}</AlertDescription>
             </Alert>
 
-            <FormField v-slot="{ componentField }" name="name">
-                <FormItem>
-                    <FormLabel>Full name</FormLabel>
-                    <FormControl>
-                        <Input
-                            autocomplete="name"
-                            placeholder="Taylor Brooks"
-                            v-bind="componentField"
-                        />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-            </FormField>
-
-            <FormField v-slot="{ componentField }" name="email">
-                <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                        <Input
-                            autocomplete="email"
-                            placeholder="you@example.com"
-                            type="email"
-                            v-bind="componentField"
-                        />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-            </FormField>
-
-            <FormField v-slot="{ componentField }" name="phone">
-                <FormItem>
-                    <FormLabel>
-                        Phone
-                        <span class="ml-1 text-xs text-muted-foreground"
-                            >(optional)</span
-                        >
-                    </FormLabel>
-                    <FormControl>
-                        <Input
-                            autocomplete="tel"
-                            placeholder="+1 555 000 0000"
-                            type="tel"
-                            v-bind="componentField"
-                        />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-            </FormField>
-
-            <FormField v-slot="{ componentField }" name="password">
-                <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                        <Input
-                            autocomplete="new-password"
-                            type="password"
-                            v-bind="componentField"
-                        />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-            </FormField>
-
-            <FormField v-slot="{ componentField }" name="password_confirmation">
-                <FormItem>
-                    <FormLabel>Confirm password</FormLabel>
-                    <FormControl>
-                        <Input
-                            autocomplete="new-password"
-                            type="password"
-                            v-bind="componentField"
-                        />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-            </FormField>
-
-            <Button :disabled="isSubmitting" class="w-full" type="submit">
-                <Spinner v-if="isSubmitting" class="mr-2 size-4" />
-                Create account
-            </Button>
-
-            <Separator />
-
-            <p class="text-center text-sm text-muted-foreground">
-                Already have an account?
-                <RouterLink
-                    class="font-medium text-foreground underline-offset-4 hover:underline"
-                    to="/login"
-                >
-                    Sign in
-                </RouterLink>
-            </p>
-        </form>
+            <RegisterAccountFields
+                v-else-if="registrationMode !== null"
+                :registration-mode="registrationMode"
+            />
+        </template>
     </AuthCard>
 </template>

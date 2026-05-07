@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', HomeController::class);
 Route::get('/spa/{path?}', SpaController::class)->where('path', '.*');
 
+AuthRouteRegistrar::authFeatureSnapshot();
+
 Route::middleware(['web', 'auth:' . AuthFeatures::make()->guard()])->group(function (): void {
     Route::get('/account/{path?}', SpaController::class)->where('path', '.*');
 
@@ -25,6 +27,7 @@ AuthRouteRegistrar::registration();
 AuthRouteRegistrar::passwordReset();
 AuthRouteRegistrar::passwordConfirmation();
 AuthRouteRegistrar::profileAndPassword();
+AuthRouteRegistrar::loginCredentialChange();
 AuthRouteRegistrar::twoFactor();
 
 if (AuthFeatures::make()->emailVerificationEnabled()) {

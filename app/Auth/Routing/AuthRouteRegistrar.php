@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Auth\Routing;
 
+use App\Auth\AuthFeatures;
+use App\Http\Controllers\Auth\AuthFeatureSnapshotController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\ConfirmedPasswordStatusController;
@@ -12,6 +14,7 @@ use App\Http\Controllers\Auth\CurrentUserController;
 use App\Http\Controllers\Auth\DeleteAccountController;
 use App\Http\Controllers\Auth\EmailVerificationNoticeController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\LoginCredentialChangeController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasskeyConfirmationController;
 use App\Http\Controllers\Auth\PasskeyLoginController;
@@ -190,6 +193,49 @@ class AuthRouteRegistrar
         Route::put('user/profile-information', [ProfileInformationController::class, 'update'])
             ->middleware(['web', "auth:{$guard}"])
             ->name('user-profile-information.update');
+
+        Route::getRoutes()->refreshNameLookups();
+        Route::getRoutes()->refreshActionLookups();
+    }
+
+    public static function authFeatureSnapshot(): void
+    {
+        Route::get('auth/features', AuthFeatureSnapshotController::class)
+            ->middleware(['web'])
+            ->name('auth.features');
+
+        Route::getRoutes()->refreshNameLookups();
+        Route::getRoutes()->refreshActionLookups();
+    }
+
+    /**
+     * Login credential change (SPA JSON + signed confirmation GET).
+     *
+     *   user.login-credentials.email   POST user/login-credentials/email   web, auth, throttle
+     *   user.login-credentials.phone   POST user/login-credentials/phone   web, auth, throttle
+     *   user.login-credentials.confirm GET  user/login-credentials/confirm/{token} web, signed, throttle
+     */
+    public static function loginCredentialChange(): void
+    {
+        $guard        = config('auth_features.guard', 'web');
+        $features     = AuthFeatures::make();
+        $authThrottle = ['web', "auth:{$guard}", 'throttle:6,1'];
+
+        if ($features->allowsEmailRegistration()) {
+            Route::post('user/login-credentials/email', [LoginCredentialChangeController::class, 'requestEmailChange'])
+                ->middleware($authThrottle)
+                ->name('user.login-credentials.email');
+        }
+
+        if ($features->allowsPhoneRegistration()) {
+            Route::post('user/login-credentials/phone', [LoginCredentialChangeController::class, 'requestPhoneChange'])
+                ->middleware($authThrottle)
+                ->name('user.login-credentials.phone');
+        }
+
+        Route::get('user/login-credentials/confirm/{token}', [LoginCredentialChangeController::class, 'confirm'])
+            ->middleware(['web', 'signed', 'throttle:6,1'])
+            ->name('user.login-credentials.confirm');
 
         Route::getRoutes()->refreshNameLookups();
         Route::getRoutes()->refreshActionLookups();

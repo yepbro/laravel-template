@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Auth\Services;
 
 use App\Models\User;
+use App\Notifications\Auth\PasswordChanged;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Authenticated password update action.
@@ -19,5 +21,13 @@ class UpdateUserPassword
     {
         $user->password = $password;
         $user->save();
+
+        $userId = $user->getKey();
+        DB::afterCommit(static function () use ($userId): void {
+            $fresh = User::query()->find($userId);
+            if ($fresh instanceof User) {
+                $fresh->notify(new PasswordChanged());
+            }
+        });
     }
 }

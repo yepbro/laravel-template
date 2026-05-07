@@ -7,6 +7,8 @@ import type {
     LoginData,
     PhoneVerificationData,
     RegisterData,
+    RequestLoginCredentialEmailChangeData,
+    RequestLoginCredentialPhoneChangeData,
     ResetPasswordData,
     TwoFactorChallengeData,
     TwoFactorConfirmData,
@@ -29,6 +31,8 @@ export const ENDPOINTS = {
     confirmPassword: '/user/confirm-password',
     updatePassword: '/user/password',
     updateProfileInformation: '/user/profile-information',
+    loginCredentialEmailChange: '/user/login-credentials/email',
+    loginCredentialPhoneChange: '/user/login-credentials/phone',
     twoFactorChallenge: '/two-factor-challenge',
     twoFactorEnable: '/user/two-factor-authentication',
     twoFactorConfirm: '/user/confirmed-two-factor-authentication',
@@ -47,8 +51,16 @@ export const ENDPOINTS = {
     passkeyRegister: '/user/passkeys',
     passkeyDestroy: '/user/passkeys',
     passkeyList: '/user/passkeys',
+    authFeatures: '/auth/features',
 } as const;
 
+export interface AuthFeatureSnapshot {
+    registration_mode: string;
+    allows_email_registration: boolean;
+    allows_phone_registration: boolean;
+    email_verification_enabled: boolean;
+    phone_verification_enabled: boolean;
+}
 export const PASSKEY_LOGIN_ROUTES = {
     options: ENDPOINTS.passkeyLoginOptions,
     submit: ENDPOINTS.passkeyLogin,
@@ -90,6 +102,8 @@ export interface CurrentUserResponse {
     phone: string | null;
     email_verified_at: string | null;
     phone_verified_at: string | null;
+    allows_email_login_credential_change: boolean;
+    allows_phone_login_credential_change: boolean;
 }
 
 export interface RegisteredPasskey {
@@ -205,6 +219,18 @@ export async function deleteAccount(data: DeleteAccountData): Promise<{
     return payload;
 }
 
+export async function fetchAuthFeatures(): Promise<AuthFeatureSnapshot> {
+    const response = await client.get<AuthFeatureSnapshot>(
+        ENDPOINTS.authFeatures,
+    );
+
+    if (response.data === undefined) {
+        throw new Error('Unexpected empty auth features response.');
+    }
+
+    return response.data;
+}
+
 export async function register(data: RegisterData): Promise<void> {
     await client.post(ENDPOINTS.register, data);
 }
@@ -243,6 +269,18 @@ export async function updateProfileInformation(
     data: UpdateProfileData,
 ): Promise<void> {
     await client.put(ENDPOINTS.updateProfileInformation, data);
+}
+
+export async function requestLoginCredentialEmailChange(
+    data: RequestLoginCredentialEmailChangeData,
+): Promise<void> {
+    await client.post(ENDPOINTS.loginCredentialEmailChange, data);
+}
+
+export async function requestLoginCredentialPhoneChange(
+    data: RequestLoginCredentialPhoneChangeData,
+): Promise<void> {
+    await client.post(ENDPOINTS.loginCredentialPhoneChange, data);
 }
 
 export async function twoFactorChallenge(

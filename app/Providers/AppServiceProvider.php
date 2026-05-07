@@ -6,8 +6,14 @@ namespace App\Providers;
 
 use App\Auth\Channels\FakePhoneOtpChannel;
 use App\Auth\Contracts\PhoneOtpChannel;
+use App\Listeners\SendQueuedWelcomeNotification;
+use App\Notifications\Channels\LoginCredentialSmsChannel;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\ChannelManager;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -40,6 +46,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::listen(Registered::class, SendQueuedWelcomeNotification::class);
+
+        $this->callAfterResolving(ChannelManager::class, function (ChannelManager $channels): void {
+            $channels->extend('login-credential-sms', function (Application $app): LoginCredentialSmsChannel {
+                return $app->make(LoginCredentialSmsChannel::class);
+            });
+        });
+
         // Login rate limiter: 5 attempts per minute, keyed by identifier + IP.
         // The identifier is read from the 'login' field or the 'email' fallback,
         // matching the normalization applied in LoginRequest::prepareForValidation().
